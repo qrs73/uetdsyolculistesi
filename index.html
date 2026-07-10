@@ -1,0 +1,3425 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UETDS Yolcu Listesi Hazırlayıcı</title>
+  <meta name="description" content="UETDS excelyolcusablon uyumlu yolcu listesi hazırlayıcı. PDF, Excel ve metin yolcu listelerini temiz Excel formatına dönüştürür." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="UETDS Yolcu Listesi Hazırlayıcı" />
+  <meta property="og:description" content="PDF, Excel, CSV, TXT ve acente listelerinden excelyolcusablon uyumlu UETDS yolcu Excel dosyası hazırlayın." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --border: #d9dee7;
+      --accent: #1d4ed8;
+      --accent-soft: #e8f0ff;
+      --green: #15803d;
+      --green-soft: #e9f8ee;
+      --amber: #b45309;
+      --amber-soft: #fff7ed;
+      --red: #b91c1c;
+      --red-soft: #fee2e2;
+      --shadow: 0 10px 30px rgba(16, 24, 40, 0.07);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    header {
+      background:
+        radial-gradient(circle at 16% 0%, rgba(29, 78, 216, .17), transparent 34%),
+        linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wrap {
+      width: min(1760px, calc(100vw - 24px));
+      max-width: none;
+      margin: 0 auto;
+      padding: 28px 12px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: center;
+      padding-top: 22px;
+      padding-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4.2vw, 56px);
+      line-height: 1;
+      margin: 0 0 16px;
+      letter-spacing: -.05em;
+    }
+
+    .subtitle {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 760px;
+      margin: 0 0 22px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 11px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      font-size: 13px;
+      color: #344054;
+    }
+
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+
+    .rule-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+      max-width: 860px;
+    }
+
+    .rule-card {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .72);
+    }
+
+    .rule-icon,
+    .workflow-index {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .rule-card b,
+    .workflow-step b {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .rule-card span,
+    .workflow-step span {
+      display: block;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .hero-card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: -.02em;
+    }
+
+    .workflow {
+      display: grid;
+      gap: 10px;
+    }
+
+    .workflow-step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f9fafb;
+    }
+
+    .template-line {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-size: 13px;
+      background: #fbfcfe;
+    }
+
+
+
+    .ad-wrap {
+      padding-top: 16px;
+      padding-bottom: 0;
+    }
+
+    .ad-banner {
+      min-height: 92px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .ad-banner .ad-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .ad-banner b {
+      font-size: 18px;
+      letter-spacing: -.02em;
+    }
+
+    .ad-banner span:last-child {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .bottom-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .bottom-info-grid .hero-card,
+    .bottom-info-grid .rule-grid {
+      margin-top: 0;
+    }
+
+    .bottom-info-grid .rule-grid {
+      max-width: none;
+    }
+
+    .footer-inner {
+      display: grid;
+      gap: 8px;
+    }
+
+    .footer-contact a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .metric b {
+      display: block;
+      font-size: 25px;
+      letter-spacing: -.04em;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    main.wrap {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -.02em;
+    }
+
+    .panel-head {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .step:last-child { margin-bottom: 0; }
+
+    .num {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    label {
+      font-weight: 650;
+      font-size: 14px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .hint {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 7px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 11px;
+      padding: 11px 12px;
+      outline: none;
+      font: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(29, 78, 216, .55);
+      box-shadow: 0 0 0 4px rgba(29, 78, 216, .10);
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .drop {
+      position: relative;
+      border: 1.5px dashed #aab5c5;
+      border-radius: 16px;
+      padding: 24px 18px;
+      text-align: center;
+      background: #fbfcfe;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .drop:hover,
+    .drop.drag {
+      border-color: var(--accent);
+      background: #f3f7ff;
+    }
+
+    .drop input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .drop strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 5px;
+    }
+
+    .drop span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .file-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+    }
+
+    .file-item em {
+      color: var(--muted);
+      font-style: normal;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .check-row input {
+      margin-top: 3px;
+    }
+
+    .check-row b {
+      display: block;
+      font-size: 14px;
+    }
+
+    .check-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+
+
+    .head-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .panel-head.quick-actions {
+      justify-content: flex-start;
+      align-items: center;
+      padding: 18px;
+    }
+
+    .panel-head.quick-actions .head-actions {
+      flex-wrap: nowrap;
+      width: 100%;
+    }
+
+    .panel-head.quick-actions .head-actions button {
+      white-space: nowrap;
+    }
+
+    .ai-settings[hidden] {
+      display: none !important;
+    }
+
+    .info-footer {
+      padding-top: 0;
+    }
+
+    .info-footer details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+
+    .info-footer summary {
+      cursor: pointer;
+      font-weight: 750;
+      color: var(--text);
+    }
+
+    .info-footer .note {
+      margin-top: 12px;
+      box-shadow: none;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 11px;
+      padding: 10px 13px;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      transition: transform .08s ease, background .15s ease, border .15s ease;
+    }
+
+    button:hover { background: #f9fafb; }
+    button:active { transform: translateY(1px); }
+
+    .primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .primary:hover { background: #1e40af; }
+
+    .success {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .success:hover { background: #166534; }
+
+    .danger {
+      color: var(--red);
+      border-color: #fecaca;
+      background: #fffafa;
+    }
+
+    .small {
+      padding: 7px 9px;
+      font-size: 12px;
+      border-radius: 9px;
+    }
+
+    .status {
+      padding: 12px 14px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: #344054;
+      font-size: 13px;
+      white-space: pre-wrap;
+      max-height: 210px;
+      overflow: auto;
+      font-family: var(--mono);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .table-wrap {
+      overflow-y: auto;
+      overflow-x: hidden;
+      max-height: 650px;
+      border-top: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 0;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 7px 6px;
+      text-align: left;
+      vertical-align: top;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f7f9fc;
+      color: #344054;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    td input, td select {
+      width: 100%;
+      padding: 8px 8px;
+      border-radius: 9px;
+      font-size: 13px;
+      min-width: 0;
+    }
+
+    td .narrow, td .wide { min-width: 0; width: 100%; }
+    td:first-child { font-weight: 700; color: var(--muted); }
+    .col-no { width: 42px; }
+    .col-country { width: 68px; }
+    .col-name { width: 15%; }
+    .col-surname { width: 15%; }
+    .col-id { width: 18%; }
+    .col-gender { width: 74px; }
+    .col-phone { width: 13%; }
+    .col-hes { width: 13%; }
+    .col-confidence { width: 88px; }
+    .col-review { width: 78px; }
+    .col-delete { width: 66px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ok { background: var(--green-soft); color: var(--green); }
+    .warn { background: var(--amber-soft); color: var(--amber); }
+    .bad { background: var(--red-soft); color: var(--red); }
+
+    .warning-list {
+      margin: 0;
+      padding-left: 14px;
+      color: var(--amber);
+      font-size: 12px;
+      min-width: 0;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 54px 20px;
+      color: var(--muted);
+    }
+
+    .empty strong {
+      display: block;
+      color: #344054;
+      margin-bottom: 6px;
+      font-size: 17px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .note {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: #475467;
+      font-size: 13px;
+    }
+
+    .note strong { color: #1f2937; }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #111827;
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 20;
+      max-width: 360px;
+      font-size: 14px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 12.5px;
+      padding: 20px 22px 34px;
+      text-align: center;
+    }
+    footer a { color: var(--accent); text-decoration: none; font-weight: 700; }
+
+
+
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      padding-top: 20px;
+      padding-bottom: 10px;
+    }
+
+    .topbar-brand {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding-right: 16px;
+    }
+
+    .topbar-brand h1 {
+      margin: 0 0 10px;
+      max-width: 980px;
+    }
+
+    .topbar-brand .subtitle {
+      margin: 0;
+      max-width: 820px;
+    }
+
+    .topbar-controls {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      flex: 0 0 auto;
+      flex-wrap: nowrap;
+      padding-top: 2px;
+    }
+
+    .topbar .control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 999px;
+      padding: 7px 10px;
+      box-shadow: 0 4px 14px rgba(16, 24, 40, 0.05);
+    }
+
+    .topbar label {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .topbar select {
+      width: auto;
+      min-width: 120px;
+      padding: 7px 28px 7px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: var(--card);
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+      }
+
+      .topbar-controls {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+
+    body[data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #273244;
+      --accent: #60a5fa;
+      --accent-soft: #172554;
+      --green: #4ade80;
+      --green-soft: #052e16;
+      --amber: #fbbf24;
+      --amber-soft: #451a03;
+      --red: #f87171;
+      --red-soft: #450a0a;
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    body[data-theme="dark"] header {
+      background:
+        radial-gradient(circle at 16% 0%, rgba(96, 165, 250, .18), transparent 34%),
+        linear-gradient(180deg, #111827 0%, #0f172a 100%);
+    }
+
+    body[data-theme="dark"] .badge,
+    body[data-theme="dark"] button,
+    body[data-theme="dark"] input[type="text"],
+    body[data-theme="dark"] input[type="password"],
+    body[data-theme="dark"] textarea,
+    body[data-theme="dark"] select,
+    body[data-theme="dark"] .topbar .control {
+      background: #0b1220;
+      color: var(--text);
+    }
+
+    body[data-theme="dark"] button:hover { background: #172033; }
+    body[data-theme="dark"] .primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+    body[data-theme="dark"] .primary:hover { background: #1d4ed8; }
+    body[data-theme="dark"] .success { background: #15803d; border-color: #15803d; color: #fff; }
+    body[data-theme="dark"] .metric,
+    body[data-theme="dark"] .file-item,
+    body[data-theme="dark"] .status,
+    body[data-theme="dark"] .note,
+    body[data-theme="dark"] th {
+      background: #0b1220;
+      color: var(--text);
+    }
+
+    body[data-theme="dark"] td,
+    body[data-theme="dark"] .drop {
+      background: #111827;
+      color: var(--text);
+    }
+
+    body[data-theme="dark"] .drop:hover,
+    body[data-theme="dark"] .drop.drag { background: #172033; }
+    body[data-theme="dark"] .empty strong,
+    body[data-theme="dark"] .note strong { color: var(--text); }
+
+    body[data-theme="dark"] .rule-card,
+    body[data-theme="dark"] .workflow-step,
+    body[data-theme="dark"] .template-line,
+    body[data-theme="dark"] .ad-banner {
+      background: #0b1220;
+      color: var(--text);
+    }
+
+    @media (max-width: 1280px) {
+      .hero,
+      main.wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card { order: 0; }
+      .bottom-info-grid { grid-template-columns: 1fr; }
+      .table-wrap { max-height: 680px; }
+    }
+
+    @media (max-width: 760px) {
+      .wrap { width: min(100vw, calc(100vw - 8px)); padding-left: 4px; padding-right: 4px; }
+      .panel-head { flex-direction: column; align-items: stretch; }
+      .panel-head.quick-actions { flex-direction: row; align-items: center; }
+      .rule-grid { grid-template-columns: 1fr; }
+      th, td { padding: 6px 4px; }
+      .col-phone, .col-hes { width: 10%; }
+      .col-id { width: 15%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div class="topbar-brand">
+        <h1 data-i18n="appTitle">UETDS Passenger List Preparer</h1>
+        <p class="subtitle" data-i18n-html="subtitle">
+          Prepare clean <b>excelyolcusablon</b>-compatible passenger Excel files from PDF, Excel, CSV, TXT or pasted agency lists.
+        </p>
+      </div>
+      <div class="topbar-controls">
+        <div class="control">
+          <label for="languageSelect" data-i18n="languageLabel">Language</label>
+          <select id="languageSelect" aria-label="Language">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="themeSelect" data-i18n="themeLabel">Theme</label>
+          <select id="themeSelect" aria-label="Theme">
+            <option value="light" data-i18n="themeLight">Light</option>
+            <option value="dark" data-i18n="themeDark">Dark</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="wrap ad-wrap">
+      <div class="ad-banner" role="complementary" aria-label="Advertisement">
+        <span class="ad-label" data-i18n="adLabel">Ad</span>
+        <b data-i18n="adTitle">Advertisement area</b>
+        <span data-i18n="adSubtitle">Place sponsor banner or company announcement here.</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <div class="panel-head quick-actions">
+        <div class="head-actions">
+          <button id="runBtn" class="primary" data-i18n="extractBtn">Extract passengers</button>
+          <button id="clearBtn" class="danger" data-i18n="clearBtn">Clear</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="step">
+          <div class="num">1</div>
+          <div>
+            <label data-i18n="uploadLabel">Upload passenger list files</label>
+            <div id="drop" class="drop">
+              <input id="fileInput" type="file" multiple accept=".pdf,.xlsx,.xls,.csv,.txt,.tsv,.doc,.docx,.jpg,.jpeg,.png,.webp,.bmp" />
+              <strong data-i18n="dropTitle">Drop files here or click to upload</strong>
+              <span data-i18n="dropSubtitle">Supports PDF, Excel, Word, images, CSV, TSV, TXT</span>
+            </div>
+            <div id="fileList" class="file-list"></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">2</div>
+          <div>
+            <label for="sourceText" data-i18n="pasteLabel">Or paste raw text</label>
+            <textarea id="sourceText" data-i18n-placeholder="sourcePlaceholder" placeholder="Example:&#10;1  Ali Veli  12345678912  TR  05321234567  E&#10;2  Victoria Meyer  AF123456  DE  +49 171 555 10 10  K"></textarea>
+            <div class="hint" data-i18n="pasteHint">Useful for WhatsApp, email, copied PDF table text, or scanned OCR output.</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">3</div>
+          <div>
+            <label data-i18n="extractionLabel">Extraction mode</label>
+
+            <div class="check-row">
+              <input id="useSmartAI" type="checkbox" checked />
+              <div>
+                <b data-i18n="smartAiTitle">Built-in Smart AI (recommended)</b>
+                <span data-i18n="smartAiDesc">Uses the app's embedded LLM to read messy text, PDF, Excel and image (OCR) lists and to infer name, surname, gender and country with high accuracy. No API key needed.</span>
+              </div>
+            </div>
+
+            <div class="check-row">
+              <input id="useAI" type="checkbox" />
+              <div>
+                <b data-i18n="paidAiTitle">Optional: use paid AI for very messy documents</b>
+                <span data-i18n="paidAiDesc">Leave this off for the free browser-only parser. Turn on only if you have an API key and want stronger extraction.</span>
+              </div>
+            </div>
+
+            <div id="aiSettings" class="ai-settings" hidden>
+              <div class="grid-2">
+                <div>
+                  <label for="apiKey" data-i18n="apiKeyLabel">OpenAI API key</label>
+                  <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+                </div>
+                <div>
+                  <label for="modelName" data-i18n="modelLabel">Model</label>
+                  <input id="modelName" type="text" value="gpt-4.1-mini" />
+                </div>
+              </div>
+
+              <label for="apiEndpoint" style="margin-top:10px" data-i18n="endpointLabel">OpenAI-compatible endpoint</label>
+              <input id="apiEndpoint" type="text" value="https://api.openai.com/v1/chat/completions" />
+            </div>
+
+            <div class="check-row">
+              <input id="useOCR" type="checkbox" />
+              <div>
+                <b data-i18n="ocrTitle">OCR scanned PDF pages</b>
+                <span data-i18n="ocrDesc">Slow but useful when the PDF has image-only pages. Loads Tesseract.js only when needed.</span>
+              </div>
+            </div>
+
+            <div class="check-row">
+              <input id="useMiniAI" type="checkbox" checked />
+              <div>
+                <b data-i18n="miniAiTitle">Free MiniAI v6 for name, surname, gender and country</b>
+                <span data-i18n="miniAiDesc">Browser-only expanded scoring model using extended name dictionaries, surname hints, suffixes, script detection and country patterns. It always fills gender as E or K.</span>
+              </div>
+            </div>
+
+            <div class="check-row">
+              <input id="defaultTR" type="checkbox" checked />
+              <div>
+                <b data-i18n="guessTitle">Guess missing nationality from name</b>
+                <span data-i18n="guessDesc">When country is not visible, the app guesses from the passenger name and falls back to TR if still uncertain.</span>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 data-i18n="reviewTitle">Review and export</h2>
+        <div class="toolbar">
+          <button id="addRowBtn" class="small" data-i18n="addRowBtn">+ Add row</button>
+          <button id="templateBtn" class="small" data-i18n="templateBtn">Download empty template</button>
+          <button id="exportCsvBtn" class="small">CSV</button>
+          <button id="exportBtn" class="success" data-i18n="exportBtn">Export Excel</button>
+        </div>
+      </div>
+      <div id="tableHolder" class="table-wrap">
+        <div class="empty">
+          <strong data-i18n="emptyTitle">No passengers extracted yet.</strong>
+          <span data-i18n="emptyDesc">Upload files or paste text, then click “Extract passengers”.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+
+  <section class="wrap info-footer">
+    <details>
+      <summary data-i18n="detailsSummary">Useful information and free extraction rules</summary>
+      <div class="bottom-info-grid">
+        <div class="rule-grid" aria-label="automatic conversion rules">
+          <div class="rule-card">
+            <div class="rule-icon">ID</div>
+            <div><b data-i18n="ruleIdTitle">Missing ID becomes 1</b><span data-i18n="ruleIdDesc">Empty passport/TCKN cells are filled automatically.</span></div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-icon">E/K</div>
+            <div><b data-i18n="ruleGenderTitle">Gender is always filled</b><span data-i18n="ruleGenderDesc">MiniAI estimates E or K from the passenger name.</span></div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-icon">ÜL</div>
+            <div><b data-i18n="ruleCountryTitle">Country code is normalized</b><span data-i18n="ruleCountryDesc">Known countries are matched to ÜLKE KODLARI; missing values are guessed.</span></div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-icon">60</div>
+            <div><b data-i18n="ruleConfidenceTitle">Low confidence rows are removed</b><span data-i18n="ruleConfidenceDesc">Passengers below 60% confidence are filtered before review.</span></div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <h3 data-i18n="workflowTitle">Practical workflow</h3>
+          <div class="workflow">
+            <div class="workflow-step"><div class="workflow-index">1</div><div><b data-i18n="workflowUploadTitle">Upload agency list</b><span data-i18n="workflowUploadDesc">Excel, CSV, PDF, TXT or pasted WhatsApp/email text.</span></div></div>
+            <div class="workflow-step"><div class="workflow-index">2</div><div><b data-i18n="workflowExtractTitle">Extract and clean</b><span data-i18n="workflowExtractDesc">Local MiniAI separates full names by putting the final token into surname, then estimates country, gender and ID.</span></div></div>
+            <div class="workflow-step"><div class="workflow-index">3</div><div><b data-i18n="workflowReviewTitle">Review only risky rows</b><span data-i18n="workflowReviewDesc">Warnings show missing or suspicious fields before export.</span></div></div>
+            <div class="workflow-step"><div class="workflow-index">4</div><div><b data-i18n="workflowExportTitle">Export e-Devlet Excel</b><span data-i18n="workflowExportDesc">Creates YOLCULAR, CİNSİYET and ÜLKE KODLARI sheets.</span></div></div>
+          </div>
+          <div class="template-line" data-i18n-html="templateLine">Output columns: <b>ÜLKE, ADI, SOYADI, TC KİMLİK /PASAPORT NO, CINSIYET, TELEFON, HES KODU</b></div>
+        </div>
+      </div>
+      <div class="note" data-i18n-html="freeNote">
+        <strong>Free mode:</strong> By default this app uses browser-only parsing, the free MiniAI v6 local classifier, name/gender/country guessing, optional OCR for scanned PDFs/images, Word/PDF/Excel pattern rules, and a confidence filter that removes rows below 60%. No API key or paid quota is needed. <br><br><strong>MiniAI v6 model:</strong> This is not a cloud LLM. It is a larger local Naive-Bayes-style scoring model made from extended name dictionaries, surname hints, suffix rules, script detection, and country patterns. <br><br><strong>Privacy note:</strong> If paid AI mode is enabled, passenger text is sent to the configured API endpoint. For production use with real TR ID/passport data, use a private backend proxy instead of exposing an API key in the browser.
+      </div>
+    </details>
+  </section>
+
+  <footer data-i18n-html="footerText">
+    <div class="footer-inner">
+      <div>© 2026 Satılmış Furkan Kahraman. All rights reserved.</div>
+      <div class="footer-contact">Contact: <a href="mailto:s.furkankahraman@gmail.com">s.furkankahraman@gmail.com</a></div>
+      
+    </div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const TEMPLATE_HEADERS = ["ÜLKE", "ADI", "SOYADI", "TC KİMLİK /PASAPORT NO", "CINSIYET", "TELEFON", "HES KODU"];
+    const MIN_CONFIDENCE = 0.60;
+
+    const I18N = {
+      en: {
+        languageLabel: "Language",
+        themeLabel: "Theme",
+        themeLight: "Light",
+        themeDark: "Dark",
+        adLabel: "Ad",
+        adTitle: "Advertisement area",
+        adSubtitle: "Place sponsor banner or company announcement here.",
+        appTitle: "UETDS Passenger List Preparer",
+        subtitle: "Prepare clean <b>excelyolcusablon</b>-compatible passenger Excel files from PDF, Excel, CSV, TXT or pasted agency lists.",
+        badgeInput: "✓ PDF and Excel input",
+        badgeLocal: "✓ Free local extraction",
+        badgeMiniAI: "✓ Free mini-AI assist",
+        badgeValidation: "✓ TR ID / passport validation",
+        badgeCountry: "✓ ÜLKE KODLARI included",
+        badgeBackend: "✓ No backend required",
+        badgeConfidence: "✓ Confidence filter ≥60%",
+        ruleIdTitle: "Missing ID becomes 1",
+        ruleIdDesc: "Empty passport/TCKN cells are filled automatically.",
+        ruleGenderTitle: "Gender is always filled",
+        ruleGenderDesc: "MiniAI estimates E or K from the passenger name.",
+        ruleCountryTitle: "Country code is normalized",
+        ruleCountryDesc: "Known countries are matched to ÜLKE KODLARI; missing values are guessed.",
+        ruleConfidenceTitle: "Low confidence rows are removed",
+        ruleConfidenceDesc: "Passengers below 60% confidence are filtered before review.",
+        workflowTitle: "Practical workflow",
+        workflowUploadTitle: "Upload agency list",
+        workflowUploadDesc: "Excel, CSV, PDF, TXT or pasted WhatsApp/email text.",
+        workflowExtractTitle: "Extract and clean",
+        workflowExtractDesc: "Local MiniAI separates full names by putting the final token into surname, then estimates country, gender and ID.",
+        workflowReviewTitle: "Review only risky rows",
+        workflowReviewDesc: "Warnings show missing or suspicious fields before export.",
+        workflowExportTitle: "Export e-Devlet Excel",
+        workflowExportDesc: "Creates YOLCULAR, CİNSİYET and ÜLKE KODLARI sheets.",
+        templateLine: "Output columns: <b>ÜLKE, ADI, SOYADI, TC KİMLİK /PASAPORT NO, CINSIYET, TELEFON, HES KODU</b>",
+        metricPassengers: "Detected passengers",
+        metricReview: "Rows needing review",
+        metricFiles: "Uploaded files",
+        metricColumns: "Template columns",
+        converterTitle: "Converter",
+        ready: "Ready",
+        uploadLabel: "Upload passenger list files",
+        dropTitle: "Drop files here or click to upload",
+        dropSubtitle: "Supports PDF, Excel, Word, images, CSV, TSV, TXT",
+        pasteLabel: "Or paste raw text",
+        sourcePlaceholder: "Example:\n1  Ali Veli  12345678912  TR  05321234567  E\n2  Victoria Meyer  AF123456  DE  +49 171 555 10 10  K",
+        pasteHint: "Useful for WhatsApp, email, copied PDF table text, or scanned OCR output.",
+        extractionLabel: "Extraction mode",
+        smartAiTitle: "Built-in Smart AI (recommended)",
+        smartAiDesc: "Uses the app's most capable embedded LLM (with vision) to read messy text, PDF, Excel and images — including handwritten lists — and infer name, surname, gender and country with high accuracy. Smart AI rows skip the confidence filter so nothing is silently dropped. No API key needed.",
+        paidAiTitle: "Optional: use your own OpenAI-compatible API",
+        paidAiDesc: "Leave this off. Turn on only if you want to route extraction through your own API key instead of the built-in AI.",
+        apiKeyLabel: "OpenAI API key",
+        modelLabel: "Model",
+        endpointLabel: "OpenAI-compatible endpoint",
+        ocrTitle: "OCR scanned PDF pages",
+        ocrDesc: "Slow but useful when the PDF has image-only pages. Loads Tesseract.js only when needed.",
+        miniAiTitle: "Free MiniAI v6 for name, surname, gender and country",
+        miniAiDesc: "Browser-only expanded scoring model using extended name dictionaries, surname hints, suffixes, script detection and country patterns. It always fills gender as E or K.",
+        guessTitle: "Guess missing nationality from name",
+        guessDesc: "When country is not visible, the app guesses from the passenger name and falls back to TR if still uncertain.",
+        freeNote: "<strong>Built-in Smart AI (default):</strong> The app reads text, PDF, Excel and images (including handwritten lists, via vision) with an embedded LLM and infers name, surname, gender (E/K) and country with high accuracy. No API key is required. If it is unavailable, the app automatically falls back to the free local MiniAI v6 parser. <br><br><strong>MiniAI v6 fallback:</strong> A local Naive-Bayes-style scoring model built from name dictionaries, surname hints, suffix rules, script detection and country patterns; runs fully in the browser. <br><br><strong>Privacy note:</strong> With Smart AI enabled, extracted passenger text and images are sent to the AI endpoint for extraction. For production use with real TR ID/passport data, prefer a private backend proxy.",
+        detailsSummary: "Useful information and free extraction rules",
+        extracting: "Extracting...",
+        extractBtn: "Extract passengers",
+        demoBtn: "Load demo",
+        clearBtn: "Clear",
+        logLabel: "Processing log",
+        defaultStatus: "Waiting for files or pasted text...",
+        reviewTitle: "Review and export",
+        addRowBtn: "+ Add row",
+        templateBtn: "Download empty template",
+        exportBtn: "Export Excel",
+        emptyTitle: "No passengers extracted yet.",
+        emptyDesc: "Upload files or paste text, then click “Extract passengers”.",
+        footerText: "<div class=\"footer-inner\"><div>© 2026 Satılmış Furkan Kahraman. All rights reserved.</div><div class=\"footer-contact\">Contact: <a href=\"mailto:s.furkankahraman@gmail.com\">s.furkankahraman@gmail.com</a></div><div><a href=\"about.html\">About</a> · <a href=\"privacy.html\">Privacy</a> · <a href=\"contact.html\">Contact</a></div></div>",
+        thCountry: "ÜLKE",
+        thName: "ADI",
+        thSurname: "SOYADI",
+        thId: "TC KİMLİK / PASAPORT NO",
+        thGender: "CINSIYET",
+        thPhone: "TELEFON",
+        thHes: "HES KODU",
+        thConfidence: "Confidence",
+        thReview: "Review",
+        ok: "OK",
+        delete: "Delete",
+        filesReading: "Reading {n} file(s)...",
+        textRead: "Text read: {name} ({chars} characters)",
+        errorReading: "ERROR reading {name}: {error}",
+        fileReadingFinished: "File reading finished",
+        demoLoadedLog: "Demo text loaded. Click Extract passengers.",
+        demoLoadedToast: "Demo loaded",
+        clearedLog: "Cleared. Waiting for files or pasted text...",
+        clearedToast: "Cleared",
+        sheetJsError: "SheetJS could not load.",
+        csvDownloaded: "CSV downloaded",
+        downloaded: "{filename} downloaded"
+      },
+      tr: {
+        languageLabel: "Dil",
+        themeLabel: "Tema",
+        themeLight: "Açık",
+        themeDark: "Koyu",
+        adLabel: "Reklam",
+        adTitle: "Reklam alanı",
+        adSubtitle: "Sponsor bannerı veya firma duyurusu için ayrılmış üst alan.",
+        appTitle: "UETDS Yolcu Listesi Hazırlayıcı",
+        subtitle: "PDF, Excel, CSV, TXT veya yapıştırılmış acente listelerinden temiz <b>excelyolcusablon</b> uyumlu yolcu Excel dosyası hazırlayın.",
+        badgeInput: "✓ PDF ve Excel girişi",
+        badgeLocal: "✓ Ücretsiz yerel çıkarma",
+        badgeMiniAI: "✓ Ücretsiz mini-AI desteği",
+        badgeValidation: "✓ TCKN / pasaport kontrolü",
+        badgeCountry: "✓ ÜLKE KODLARI dahil",
+        badgeBackend: "✓ Backend gerekmez",
+        badgeConfidence: "✓ Güven filtresi ≥%60",
+        ruleIdTitle: "Eksik kimlik 1 olur",
+        ruleIdDesc: "Boş pasaport/TCKN hücreleri otomatik doldurulur.",
+        ruleGenderTitle: "Cinsiyet her zaman dolar",
+        ruleGenderDesc: "MiniAI yolcu adından E veya K tahmin eder.",
+        ruleCountryTitle: "Ülke kodu düzenlenir",
+        ruleCountryDesc: "Bilinen ülkeler ÜLKE KODLARI ile eşleşir; eksik değerler tahmin edilir.",
+        ruleConfidenceTitle: "Düşük güvenli satırlar silinir",
+        ruleConfidenceDesc: "%60 altındaki yolcular kontrol ekranına gelmeden filtrelenir.",
+        workflowTitle: "Pratik kullanım akışı",
+        workflowUploadTitle: "Acente listesini yükle",
+        workflowUploadDesc: "Excel, CSV, PDF, TXT veya WhatsApp/e-posta metni.",
+        workflowExtractTitle: "Çıkar ve temizle",
+        workflowExtractDesc: "Yerel MiniAI ad, soyad, ülke, cinsiyet ve kimliği ayırır.",
+        workflowReviewTitle: "Sadece riskli satırları kontrol et",
+        workflowReviewDesc: "Uyarılar dışa aktarmadan önce eksik veya şüpheli alanları gösterir.",
+        workflowExportTitle: "e-Devlet Excel dışa aktar",
+        workflowExportDesc: "YOLCULAR, CİNSİYET ve ÜLKE KODLARI sayfalarını oluşturur.",
+        templateLine: "Çıktı kolonları: <b>ÜLKE, ADI, SOYADI, TC KİMLİK /PASAPORT NO, CINSIYET, TELEFON, HES KODU</b>",
+        metricPassengers: "Bulunan yolcular",
+        metricReview: "Kontrol gereken satır",
+        metricFiles: "Yüklenen dosya",
+        metricColumns: "Şablon kolonu",
+        converterTitle: "Dönüştürücü",
+        ready: "Hazır",
+        uploadLabel: "Yolcu listesi dosyalarını yükle",
+        dropTitle: "Dosyaları buraya bırakın veya yüklemek için tıklayın",
+        dropSubtitle: "PDF, Excel, Word, görsel, CSV, TSV, TXT desteklenir",
+        pasteLabel: "Veya ham metin yapıştır",
+        sourcePlaceholder: "Örnek:\n1  Ali Veli  12345678912  TR  05321234567  E\n2  Victoria Meyer  AF123456  DE  +49 171 555 10 10  K",
+        pasteHint: "WhatsApp, e-posta, kopyalanmış PDF tablo metni veya OCR çıktısı için kullanışlıdır.",
+        extractionLabel: "Çıkarma modu",
+        smartAiTitle: "Yerleşik Akıllı AI (önerilen)",
+        smartAiDesc: "Uygulamanın en güçlü gömülü LLM'ini (görüntü okuma dahil) kullanarak karışık metin, PDF, Excel ve görselleri — el yazısı listeler dahil — okur; ad, soyad, cinsiyet ve ülkeyi yüksek doğrulukla çıkarır. Akıllı AI satırları güven filtresini atlar, böylece hiçbir satır sessizce silinmez. API key gerekmez.",
+        paidAiTitle: "Opsiyonel: kendi OpenAI-uyumlu API'nizi kullanın",
+        paidAiDesc: "Bunu kapalı bırakın. Yalnızca çıkarmayı yerleşik AI yerine kendi API key'inizle yapmak istiyorsanız açın.",
+        apiKeyLabel: "OpenAI API key",
+        modelLabel: "Model",
+        endpointLabel: "OpenAI uyumlu endpoint",
+        ocrTitle: "Taranmış PDF sayfalarına OCR uygula",
+        ocrDesc: "Yavaştır ama PDF sadece görsel sayfalardan oluşuyorsa faydalıdır. Tesseract.js sadece gerektiğinde yüklenir.",
+        miniAiTitle: "Ad, cinsiyet ve ülke için ücretsiz MiniAI v6",
+        miniAiDesc: "Genişletilmiş ad sözlükleri, soyad ipuçları, ekler, alfabe tespiti ve ülke örüntülerini kullanan tarayıcı içi puanlama modeli. Cinsiyeti her zaman E veya K olarak doldurur.",
+        guessTitle: "Eksik uyruğu addan tahmin et",
+        guessDesc: "Ülke görünmüyorsa uygulama yolcu adından tahmin eder; hâlâ belirsizse TR yazar.",
+        freeNote: "<strong>Yerleşik Akıllı AI (varsayılan):</strong> Uygulama; metin, PDF, Excel ve görselleri (el yazısı listeler dahil, görüntü okuma ile) gömülü bir LLM ile okur ve ad, soyad, cinsiyet (E/K) ve ülkeyi yüksek doğrulukla çıkarır. API key gerekmez. Kullanılamazsa uygulama otomatik olarak ücretsiz yerel MiniAI v6 ayrıştırıcısına döner. <br><br><strong>MiniAI v6 yedeği:</strong> Ad sözlükleri, soyad ipuçları, ek kuralları, alfabe tespiti ve ülke örüntülerinden oluşan, tamamen tarayıcıda çalışan yerel bir puanlama modeli. <br><br><strong>Gizlilik notu:</strong> Akıllı AI açıkken çıkarılan yolcu metni ve görseller çıkarım için AI endpointine gönderilir. Gerçek TCKN/pasaport verisiyle üretim kullanımı için özel bir backend proxy tercih edin.",
+        detailsSummary: "Kullanım bilgileri ve ücretsiz çıkarma kuralları",
+        extracting: "Çıkarılıyor...",
+        extractBtn: "Yolcuları çıkar",
+        demoBtn: "Demo yükle",
+        clearBtn: "Temizle",
+        logLabel: "İşlem kaydı",
+        defaultStatus: "Dosya veya yapıştırılmış metin bekleniyor...",
+        reviewTitle: "Kontrol ve dışa aktar",
+        addRowBtn: "+ Satır ekle",
+        templateBtn: "Boş şablon indir",
+        exportBtn: "Excel dışa aktar",
+        emptyTitle: "Henüz yolcu çıkarılmadı.",
+        emptyDesc: "Dosya yükleyin veya metin yapıştırın, sonra “Yolcuları çıkar” düğmesine basın.",
+        footerText: "<div class=\"footer-inner\"><div>© 2026 Satılmış Furkan Kahraman. Tüm hakları saklıdır.</div><div class=\"footer-contact\">İletişim: <a href=\"mailto:s.furkankahraman@gmail.com\">s.furkankahraman@gmail.com</a></div><div><a href=\"about.html\">Hakkında</a> · <a href=\"privacy.html\">Gizlilik</a> · <a href=\"contact.html\">İletişim</a></div></div>",
+        thCountry: "ÜLKE",
+        thName: "ADI",
+        thSurname: "SOYADI",
+        thId: "TC KİMLİK / PASAPORT NO",
+        thGender: "CINSIYET",
+        thPhone: "TELEFON",
+        thHes: "HES KODU",
+        thConfidence: "Güven",
+        thReview: "Kontrol",
+        ok: "OK",
+        delete: "Sil",
+        filesReading: "{n} dosya okunuyor...",
+        textRead: "Metin okundu: {name} ({chars} karakter)",
+        errorReading: "{name} okunurken HATA: {error}",
+        fileReadingFinished: "Dosya okuma tamamlandı",
+        demoLoadedLog: "Demo metni yüklendi. Yolcuları çıkar düğmesine basın.",
+        demoLoadedToast: "Demo yüklendi",
+        clearedLog: "Temizlendi. Dosya veya yapıştırılmış metin bekleniyor...",
+        clearedToast: "Temizlendi",
+        sheetJsError: "SheetJS yüklenemedi.",
+        csvDownloaded: "CSV indirildi",
+        downloaded: "{filename} indirildi"
+      }
+    };
+
+    let appLang = localStorage.getItem("uetds_lang") || "tr";
+    let appTheme = localStorage.getItem("uetds_theme") || "light";
+
+    const COUNTRY_ROWS = [{"code": "TR", "name": "Türkiye"}, {"code": "AM", "name": "Abd Minor Outlying Adaları"}, {"code": "VI", "name": "Abd Virjin Adaları"}, {"code": "AF", "name": "Afganistan"}, {"code": "DE", "name": "Almanya"}, {"code": "US", "name": "Amerika Birleşik Devletleri"}, {"code": "AS", "name": "Amerika Samoası"}, {"code": "AS", "name": "Amerikan Okyanusyası"}, {"code": "AD", "name": "Andorra"}, {"code": "AO", "name": "Angola"}, {"code": "AI", "name": "Anguılla"}, {"code": "AQ", "name": "Antartika"}, {"code": "AG", "name": "Antıgua Ve Bermuda"}, {"code": "AR", "name": "Arjantin"}, {"code": "AL", "name": "Arnavutluk"}, {"code": "AW", "name": "Aruba"}, {"code": "AU", "name": "Avustralya"}, {"code": "AO", "name": "Avustralya Okyanusu"}, {"code": "AU", "name": "Avusturya"}, {"code": "AZ", "name": "Azerbaycan - Nahçıvan"}, {"code": "BS", "name": "Bahamalar"}, {"code": "BH", "name": "Bahreyn"}, {"code": "BD", "name": "Bangladeş"}, {"code": "BB", "name": "Barbados"}, {"code": "BE", "name": "Belçika"}, {"code": "BZ", "name": "Belize"}, {"code": "BJ", "name": "Benin"}, {"code": "BM", "name": "Bermuda"}, {"code": "BY", "name": "Beyaz Rusya"}, {"code": "BT", "name": "Bhutan"}, {"code": "BILINMIYOR", "name": "BILINMIYOR"}, {"code": "B", "name": "Bilinemeyen Ülke Ve Topraklar"}, {"code": "AE", "name": "Birleşik Arap Emirlikleri"}, {"code": "BO", "name": "Birleşik Devletler Minor Outlyıng Adaları"}, {"code": "BAC", "name": "Bismark Archipelago"}, {"code": "BO", "name": "Bolivya"}, {"code": "BA", "name": "Bosna -Hersek"}, {"code": "BW", "name": "Bostvana"}, {"code": "BVA", "name": "Bouvet Adası"}, {"code": "BR", "name": "Brezilya"}, {"code": "BN", "name": "Brunei"}, {"code": "BG", "name": "Bulgaristan"}, {"code": "BF", "name": "Burkina Faso"}, {"code": "MM", "name": "Burma"}, {"code": "BI", "name": "Burundi"}, {"code": "CV", "name": "Cape Verde"}, {"code": "KY", "name": "Cayman Adaları"}, {"code": "GI", "name": "Cebeli Tarık"}, {"code": "DZ", "name": "Cezayir"}, {"code": "CX", "name": "Chrıstmas Adaları"}, {"code": "DJ", "name": "Cibuti"}, {"code": "CC", "name": "Cocos Adaları"}, {"code": "CK", "name": "Cook Adaları"}, {"code": "TD", "name": "Çad"}, {"code": "CC", "name": "Çeçen Cumhuriyeti"}, {"code": "CZ", "name": "Çek Cumhuriyeti"}, {"code": "CN", "name": "Çin Halk Cumhuriyeti"}, {"code": "DC", "name": "Dağıstan Cumhuriyeti"}, {"code": "DK", "name": "Danimarka"}, {"code": "DT", "name": "Doğu Timor"}, {"code": "DO", "name": "Dominik Cumhuriyeti"}, {"code": "DM", "name": "Dominika"}, {"code": "DB", "name": "Dubai"}, {"code": "EC", "name": "Ekvator"}, {"code": "GQ", "name": "Ekvator Ginesi"}, {"code": "SV", "name": "El Salvador"}, {"code": "ID", "name": "Endonezya"}, {"code": "ER", "name": "Eritre"}, {"code": "ER", "name": "Eritre"}, {"code": "AM", "name": "Ermenistan"}, {"code": "EE", "name": "Estonya"}, {"code": "ET", "name": "Etiyopya"}, {"code": "FK", "name": "Falkland Adaları"}, {"code": "FO", "name": "Faroe Adaları"}, {"code": "FO", "name": "Faroe Adaları"}, {"code": "MA", "name": "Fas"}, {"code": "FJ", "name": "Fiji"}, {"code": "CI", "name": "Fildişi Sahili"}, {"code": "PH", "name": "Filipinler"}, {"code": "FI", "name": "Finlandiya"}, {"code": "FR", "name": "Fransa"}, {"code": "GF", "name": "Fransız Guyanası"}, {"code": "PF", "name": "Fransız Güney Toprakları"}, {"code": "PF", "name": "Fransız Polinezyası"}, {"code": "GA", "name": "Gabon"}, {"code": "GM", "name": "Gambiya"}, {"code": "GH", "name": "Gana"}, {"code": "GN", "name": "Gine"}, {"code": "GW", "name": "Gine-Bissau"}, {"code": "GD", "name": "Grenada"}, {"code": "GL", "name": "Grönland"}, {"code": "GP", "name": "Guadelup"}, {"code": "GU", "name": "Guam"}, {"code": "GT", "name": "Guatemala"}, {"code": "GY", "name": "Guyana"}, {"code": "ZA", "name": "Güney Afrika Cumhuriyeti"}, {"code": "GFR", "name": "Güney Fransız Toprakları"}, {"code": "GGS", "name": "Güney Georgıa Ve Güney Sandwıch Adaları"}, {"code": "GGS", "name": "Güney Georgia ve Güney Sandwich Adaları"}, {"code": "KR", "name": "Güney Kore Cumhuriyeti"}, {"code": "GE", "name": "Gürcistan"}, {"code": "HT", "name": "Haiti"}, {"code": "HAD", "name": "Heard Adaları Ve Mc Donald Adaları"}, {"code": "HR", "name": "Hırvatistan"}, {"code": "IN", "name": "Hindistan"}, {"code": "NL", "name": "Hollanda"}, {"code": "AN", "name": "Hollanda Antilleri"}, {"code": "HN", "name": "Honduras"}, {"code": "HK", "name": "Hong Kong"}, {"code": "IQ", "name": "Irak"}, {"code": "IO", "name": "İngiliz Hint Oky.Toprakları"}, {"code": "VG", "name": "İngiliz Virjin Adaları"}, {"code": "GB", "name": "İngiltere"}, {"code": "IR", "name": "İran"}, {"code": "IE", "name": "İrlanda"}, {"code": "ES", "name": "İspanya"}, {"code": "IL", "name": "İsrail"}, {"code": "SE", "name": "İsveç"}, {"code": "CH", "name": "İsviçre"}, {"code": "PS", "name": "İşgal Altındaki Filistin Toprağı"}, {"code": "IT", "name": "İtalya"}, {"code": "IS", "name": "İzlanda"}, {"code": "JM", "name": "Jamaika"}, {"code": "JP", "name": "Japonya"}, {"code": "KH", "name": "Kamboçya"}, {"code": "CM", "name": "Kamerun"}, {"code": "CA", "name": "Kanada"}, {"code": "MW", "name": "Karadağ"}, {"code": "QA", "name": "Katar"}, {"code": "KZ", "name": "Kazakistan"}, {"code": "KE", "name": "Kenya"}, {"code": "CY", "name": "Kıbrıs Rum Kesimi"}, {"code": "KG", "name": "Kırgızistan"}, {"code": "KI", "name": "Kiribati"}, {"code": "CC", "name": "Kokos Adaları"}, {"code": "CO", "name": "Kolombiya"}, {"code": "KM", "name": "Komoro Adaları"}, {"code": "CG", "name": "Kongo"}, {"code": "K", "name": "Kosova"}, {"code": "CR", "name": "Kosta Rika"}, {"code": "KB", "name": "Kutup Bölgeleri"}, {"code": "KW", "name": "Kuveyt"}, {"code": "KKTC", "name": "Kuzey Kıbrıs Türk Cumhuriyeti"}, {"code": "KP", "name": "Kuzey Kore Demokratik Halk Cum."}, {"code": "MP", "name": "Kuzey Mariana Adaları"}, {"code": "MP", "name": "Kuzey Mariana Adaları"}, {"code": "YE", "name": "Kuzey Yemen"}, {"code": "CU", "name": "Küba"}, {"code": "LA", "name": "Laos"}, {"code": "LS", "name": "Lesotho"}, {"code": "LV", "name": "Letonya"}, {"code": "LR", "name": "Liberya"}, {"code": "LY", "name": "Libya"}, {"code": "LI", "name": "Lihteştayn"}, {"code": "LT", "name": "Litvanya"}, {"code": "LB", "name": "Lübnan"}, {"code": "LU", "name": "Lüksemburg"}, {"code": "HU", "name": "Macaristan"}, {"code": "MG", "name": "Madagaskar"}, {"code": "MO", "name": "Makao"}, {"code": "MK", "name": "Makedonya"}, {"code": "MI", "name": "Malavi"}, {"code": "MV", "name": "Maldiv Adaları"}, {"code": "MY", "name": "Malezya"}, {"code": "ML", "name": "Mali"}, {"code": "MT", "name": "Malta"}, {"code": "MH", "name": "Marshall Adaları"}, {"code": "MH", "name": "Marshall Adaları"}, {"code": "MQ", "name": "Martinik"}, {"code": "MU", "name": "Mauritius"}, {"code": "YT", "name": "Mayotte"}, {"code": "MX", "name": "Meksika"}, {"code": "ML", "name": "Melilla"}, {"code": "CM", "name": "Melilla"}, {"code": "EG", "name": "Mısır"}, {"code": "FM", "name": "Mikronezya"}, {"code": "MN", "name": "Moğolistan"}, {"code": "MD", "name": "Moldova"}, {"code": "MC", "name": "Monaka"}, {"code": "MS", "name": "Montserrat"}, {"code": "MD", "name": "Montserrat"}, {"code": "MR", "name": "Moritanya"}, {"code": "MZ", "name": "Mozambik"}, {"code": "MM", "name": "Myanmar"}, {"code": "NA", "name": "Namibya"}, {"code": "NR", "name": "Nauru"}, {"code": "NP", "name": "Nepal"}, {"code": "NE", "name": "Nijer"}, {"code": "NG", "name": "Nijerya"}, {"code": "NI", "name": "Nikaragua"}, {"code": "NU", "name": "Niue"}, {"code": "NF", "name": "Norfolk Adası"}, {"code": "NF", "name": "Norfolk Adası"}, {"code": "NO", "name": "Norveç"}, {"code": "CF", "name": "Orta Afrika Cumhuriyeti"}, {"code": "UZ", "name": "Özbekistan"}, {"code": "PK", "name": "Pakistan"}, {"code": "PW", "name": "Palau"}, {"code": "PW", "name": "Palau"}, {"code": "PA", "name": "Panama"}, {"code": "PG", "name": "Papua Yeni Gine"}, {"code": "PY", "name": "Paraguay"}, {"code": "PE", "name": "Peru"}, {"code": "PN", "name": "Pitcairn"}, {"code": "PL", "name": "Polonya"}, {"code": "PT", "name": "Portekiz"}, {"code": "RE", "name": "Reunion"}, {"code": "RO", "name": "Romanya"}, {"code": "RW", "name": "Ruanda"}, {"code": "RU", "name": "Rusya Federasyonu"}, {"code": "WS", "name": "Samoa"}, {"code": "SM", "name": "San Marino"}, {"code": "SM", "name": "San Marino"}, {"code": "ST", "name": "Sao Tome And Prıncıpe"}, {"code": "SN", "name": "Senegal"}, {"code": "SP", "name": "Septe"}, {"code": "SAB", "name": "Seyşel Adaları Ve Bağlantıları"}, {"code": "SL", "name": "Sıerra Leone"}, {"code": "SR", "name": "Sırbistan"}, {"code": "SG", "name": "Singapur"}, {"code": "SK", "name": "Slovakya"}, {"code": "SI", "name": "Slovenya"}, {"code": "SB", "name": "Solomon Adaları"}, {"code": "SO", "name": "Somali"}, {"code": "LK", "name": "Sri Lanka"}, {"code": "HB", "name": "St. Helena Ve Bağlantıları"}, {"code": "LC", "name": "St. Lucia"}, {"code": "PM", "name": "St. Pierre Ve Miquelon"}, {"code": "VC", "name": "St Vincent Ve Grenadinler"}, {"code": "KN", "name": "St.Kıtts   Nevis"}, {"code": "SD", "name": "Sudan"}, {"code": "SR", "name": "Surinam"}, {"code": "SY", "name": "Suriye"}, {"code": "SA", "name": "Suudi Arabistan"}, {"code": "CL", "name": "Şili"}, {"code": "TJ", "name": "Tacikistan"}, {"code": "TZ", "name": "Tanzanya"}, {"code": "TS", "name": "Tataristan"}, {"code": "TH", "name": "Tayland"}, {"code": "TW", "name": "Tayvan"}, {"code": "TG", "name": "Togo"}, {"code": "TK", "name": "Tokelau"}, {"code": "TO", "name": "Tonga"}, {"code": "TT", "name": "Trinidad Ve Tobago"}, {"code": "TN", "name": "Tunus"}, {"code": "TC", "name": "Turks Ve Caicos Adası"}, {"code": "TV", "name": "Tuvalu"}, {"code": "TM", "name": "Türkmenistan"}, {"code": "UG", "name": "Uganda"}, {"code": "UA", "name": "Ukrayna"}, {"code": "OM", "name": "Umman"}, {"code": "UY", "name": "Uruguay"}, {"code": "JO", "name": "Ürdün"}, {"code": "VU", "name": "Vanuatu"}, {"code": "VA", "name": "Vatikan"}, {"code": "VE", "name": "Venezuella"}, {"code": "VN", "name": "Vietnam"}, {"code": "VI", "name": "Virgin Adaları"}, {"code": "WF", "name": "Wallis Ve Futuna Adaları"}, {"code": "YK", "name": "Yakutistan"}, {"code": "YE", "name": "Yemen"}, {"code": "NC", "name": "Yeni Kalodenya Ve Bağlantıları"}, {"code": "NZ", "name": "Yeni Zelanda"}, {"code": "NZ", "name": "Yeni Zelanda Okyanusu"}, {"code": "YU", "name": "Yugoslavya"}, {"code": "GR", "name": "Yunanistan"}, {"code": "CD", "name": "Zaire"}, {"code": "ZM", "name": "Zambia"}, {"code": "ZW", "name": "Zimbabve"}];
+    const GENDER_ROWS = [["E", "ERKEK"], ["K", "KADIN"]];
+
+    const state = {
+      rawTexts: [],
+      workbookSheets: [],
+      images: [],
+      passengers: [],
+      files: []
+    };
+
+    const els = {
+      languageSelect: document.getElementById("languageSelect"),
+      themeSelect: document.getElementById("themeSelect"),
+      drop: document.getElementById("drop"),
+      fileInput: document.getElementById("fileInput"),
+      fileList: document.getElementById("fileList"),
+      sourceText: document.getElementById("sourceText"),
+      useSmartAI: document.getElementById("useSmartAI"),
+      useAI: document.getElementById("useAI"),
+      apiKey: document.getElementById("apiKey"),
+      modelName: document.getElementById("modelName"),
+      apiEndpoint: document.getElementById("apiEndpoint"),
+      useOCR: document.getElementById("useOCR"),
+      useMiniAI: document.getElementById("useMiniAI"),
+      defaultTR: document.getElementById("defaultTR"),
+      runBtn: document.getElementById("runBtn"),
+      demoBtn: document.getElementById("demoBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      aiSettings: document.getElementById("aiSettings"),
+      addRowBtn: document.getElementById("addRowBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      exportCsvBtn: document.getElementById("exportCsvBtn"),
+      templateBtn: document.getElementById("templateBtn"),
+      tableHolder: document.getElementById("tableHolder"),
+      status: document.getElementById("status"),
+      toast: document.getElementById("toast"),
+      mRows: document.getElementById("mRows"),
+      mWarnings: document.getElementById("mWarnings"),
+      mFiles: document.getElementById("mFiles")
+    };
+
+    const countryCodes = new Set(COUNTRY_ROWS.map(c => String(c.code).toUpperCase()));
+    const countryNameToCode = buildCountryLookup();
+
+    function buildCountryLookup() {
+      const map = new Map();
+      for (const c of COUNTRY_ROWS) {
+        map.set(norm(c.name), c.code.toUpperCase());
+        map.set(norm(c.code), c.code.toUpperCase());
+      }
+      const aliases = {
+        "turkiye": "TR", "turkey": "TR", "türkiye": "TR", "tc": "TR", "t.c.": "TR",
+        "germany": "DE", "deutschland": "DE", "almanya": "DE",
+        "france": "FR", "fransa": "FR",
+        "netherlands": "NL", "holland": "NL", "hollanda": "NL",
+        "belgium": "BE", "belcika": "BE", "belçika": "BE",
+        "austria": "AT", "avusturya": "AT",
+        "ukraine": "UA", "ukrayna": "UA",
+        "russia": "RU", "rusya": "RU",
+        "azerbaijan": "AZ", "azerbaycan": "AZ",
+        "georgia": "GE", "gurcistan": "GE", "gürcistan": "GE",
+        "iran": "IR", "irak": "IQ", "iraq": "IQ",
+        "syria": "SY", "suriye": "SY",
+        "bulgaria": "BG", "bulgaristan": "BG",
+        "romania": "RO", "romanya": "RO",
+        "greece": "GR", "yunanistan": "GR",
+        "united states": "US", "usa": "US", "amerika": "US",
+        "united kingdom": "GB", "uk": "GB", "england": "GB", "ingiltere": "GB", "birlesik krallik": "GB", "canada": "CA", "kanada": "CA", "egypt": "EG", "misir": "EG", "mısır": "EG", "china": "CN", "hong kong": "HK", "taiwan": "TW", "korea": "KR", "south korea": "KR", "japan": "JP", "spain": "ES", "ispanya": "ES", "brazil": "BR", "brezilya": "BR", "colombia": "CO", "kolombiya": "CO", "portugal": "PT"
+      };
+      Object.entries(aliases).forEach(([k, v]) => map.set(norm(k), v));
+      return map;
+    }
+
+    const MALE_NAME_HINTS = new Set([
+      "ahmet", "mehmet", "mustafa", "ali", "veli", "hasan", "huseyin", "hüseyin", "ibrahim", "ismail", "osman", "omer", "ömer", "yusuf", "murat", "emre", "burak", "serkan", "furkan", "kaan", "efe", "arda", "baris", "barış", "deniz", "can", "cem", "cemal", "engin", "erhan", "erkan", "fatih", "halil", "kerem", "levent", "metin", "oguz", "oğuz", "onur", "selim", "sinan", "taylan", "umut", "volkan", "mert", "enes", "bilal", "ramazan", "recep",
+      "mohamed", "muhammed", "muhammad", "mohammad", "ahmad", "ahmed", "omar", "khaled", "hassan", "hussein", "youssef", "yousef", "ali", "mustafa", "ibrahim",
+      "john", "michael", "david", "peter", "george", "james", "robert", "thomas", "daniel", "alex", "andrew", "mark", "paul", "victor",
+      "hans", "klaus", "jurgen", "jürgen", "franz", "wolfgang", "helmut", "stefan", "max", "pavel", "ivan", "sergey", "sergei", "alexei", "vladimir", "oleksandr", "giorgi", "nikoloz"
+    ].map(norm));
+
+    const FEMALE_NAME_HINTS = new Set([
+      "ayse", "ayşe", "fatma", "emine", "zeynep", "elif", "zehra", "merve", "esra", "busra", "büşra", "hatice", "haticenur", "sultan", "rabia", "kubra", "kübra", "gamze", "melis", "eda", "ecem", "ipek", "derya", "deniz", "selin", "burcu", "beyza", "cansu", "ceren", "dilara", "duygu", "ebru", "gizem", "gozde", "gözde", "hilal", "irem", "ırmak", "irem", "leyla", "nur", "nurgul", "nurgül", "ozge", "özge", "pinar", "pınar", "seda", "sevgi", "sibel", "tugba", "tuğba", "yagmur", "yağmur", "yasemin",
+      "aisha", "ayesha", "fatima", "mariam", "maryam", "amina", "zainab", "zahra", "layla", "leila", "nour", "noor", "sara", "sarah",
+      "anna", "maria", "victoria", "elena", "olga", "natalia", "irina", "svetlana", "anastasia", "kateryna", "oksana", "nino", "tamuna",
+      "jane", "mary", "linda", "patricia", "susan", "jessica", "emma", "sofia", "sophia", "laura", "julia", "emily", "hannah", "greta", "helga"
+    ].map(norm));
+
+
+    const EXTRA_MALE_NAME_HINTS = [
+      // Turkish and Turkic
+      "abdullah","adem","adnan","akif","alper","alp","alparslan","anil","anıl","asaf","ata","ayhan","aykut","bartu","bekir","berat","berkay","bora","bugra","buğra","bulent","bülent","cagri","çağrı","cengiz","coskun","coşkun","davut","denizhan","dogukan","doğukan","ekrem","emir","emirhan","ercan","erdal","erdem","eren","ertugrul","ertuğrul","faruk","ferhat","fikret","gokhan","gökhan","haluk","harun","ilker","ilhan","kadir","koray","mahmut","mesut","muharrem","necip","nihad","nihat","okay","okan","orkun","ozan","rahmi","ridvan","rıdvan","saim","salih","samet","savas","savaş","serdar","soner","taha","talha","taner","tarkan","tolga","tuncay","ugur","uğur","yakup","yavuz","yunus",
+      // Arabic / Persian / Middle East
+      "abdul","abdulrahman","abdulaziz","abdulkadir","abdulrahim","adel","adham","akram","anas","ammar","amr","ayman","aziz","bader","bilal","faisal","faris","fadi","farhad","farid","hamad","hamdan","hamid","hamza","haris","hisham","jamal","karim","mahmoud","mahmud","majid","mansour","marwan","mohsen","mohsin","mohammed","mohamad","muhamad","nabil","nasser","nasir","qasim","raed","rami","rashed","rashid","saad","salah","salem","sameer","samer","sami","samir","tariq","wael","waleed","walid","yahia","yahya","zakaria","ziad",
+      "abbas","arash","babak","behzad","dariush","ehsan","farzad","hamidreza","hossein","javad","kamran","kaveh","masoud","mehdi","mehrdad","milad","morteza","navid","omid","peyman","pouria","sadegh","shahab","siavash",
+      // Slavic / European
+      "adam","adrian","albert","alexander","andrei","andrey","andrij","anton","artem","bogdan","boris","danilo","danil","denis","dmytro","eduard","evgeny","evgeniy","fedor","fyodor","igor","ilya","kirill","konstantin","maksim","maxim","mikhail","mikolaj","nikita","oleg","petr","roman","ruslan","stanislav","stepan","vadim","vasyl","viktor","yuriy","yuri",
+      "andrea","angelo","carlo","claudio","davide","enrico","fabio","luca","luigi","matteo","nicola","paolo","simone","stefano","vincenzo",
+      "alain","andre","arnaud","bruno","christian","christophe","daniel","dominique","francois","françois","guillaume","henri","jacques","laurent","luc","michel","nicolas","olivier","pascal","philippe","sebastien","sébastien",
+      "alejandro","antonio","diego","eduardo","fernando","francisco","hugo","javier","jorge","luis","pedro","rafael","ricardo","santiago",
+      // South / East / Southeast Asia
+      "aditya","amit","anil","arjun","ashok","deepak","gopal","harish","kiran","krishna","manoj","mohit","naveen","pradeep","rahul","raj","rajesh","ramesh","ravi","rohit","sanjay","suresh","vijay","vikram","vinod",
+      "akihiro","akira","daichi","daisuke","haruto","hiroshi","ichiro","kenji","kenta","koji","makoto","naoki","ren","ryo","satoshi","shinji","takahiro","takashi","taro","yuki","yuto",
+      "bokcheol","cheol","chul","geun","geunwoo","hyunwoo","hyun","jaeho","jihoon","jong","jonghwan","jun","jung","kyungmin","minho","minsik","sangho","seok","seung","tae","taehyung","woojin","youngjin","yong","hwan","ho","woo",
+      "anh","bao","binh","duc","hieu","hoang","hung","long","minh","nam","phuc","quang","son","tuan","viet",
+      "agung","budi","eko","fajar","hadi","imam","joko","rizky","wahyu"
+    ].map(norm);
+
+    const EXTRA_FEMALE_NAME_HINTS = [
+      // Turkish and Turkic
+      "ada","afra","ahu","alev","asli","aslı","asuman","ayca","ayça","aydan","aydanur","aygul","aygül","aylin","aysel","aysen","ayşen","ayten","bahar","banu","belgin","beste","bilge","birsen","cagla","çağla","damla","defne","didem","dilan","dilek","elifnur","eslem","feride","filiz","gonca","gul","gül","gulay","gülay","gulcan","gülcan","gulsah","gülşah","handa","hande","havva","hazal","ipeknur","jale","lamia","lale","melek","melike","mine","miray","mujgan","müjgan","neslihan","nida","nil","nilay","nisa","nuray","nuriye","pelin","reyhan","ruya","rüya","safiye","sena","seval","sevil","seyma","şeyma","sumeyye","sümeyye","tuba","zeliha",
+      // Arabic / Persian / Middle East
+      "alya","amal","amani","amira","anisa","aya","basma","dina","eman","fatemeh","ghada","habiba","hala","hanan","hiba","iman","jamila","joud","khadija","lamia","laila","malak","maram","maya","mona","nadia","najwa","nawal","rania","reem","rima","salma","samira","shahd","siham","yasmin","yasmine","zeinab",
+      "azadeh","elahe","elnaz","farah","fariba","fereshteh","golnaz","leila","mahsa","mina","nasim","nazanin","neda","negin","parisa","roya","sahar","samaneh","sanaz","shirin","simin","soraya","yeganeh",
+      // Slavic / European
+      "aleksandra","alina","alla","daria","darya","ekaterina","galina","inna","katerina","ksenia","kseniya","larisa","ludmila","lyudmila","marina","nadiya","nadezhda","polina","sonia","tatiana","tatyana","valentina","vera","yulia","yuliya",
+      "alessandra","alice","antonella","arianna","aurora","chiara","elisa","francesca","giorgia","ilaria","lucia","marta","valentina",
+      "amelie","amélie","brigitte","caroline","celine","céline","claire","elodie","élodie","isabelle","julie","lea","léa","manon","nathalie","sophie","sylvie",
+      "alejandra","ana","beatriz","claudia","isabel","lucia","paula","raquel","teresa",
+      // South / East / Southeast Asia
+      "anjali","deepa","divya","kavita","lakshmi","meera","neha","pooja","priya","rani","rekha","ritu","sneha","sunita","swati",
+      "aiko","akiko","asuka","ayaka","chihiro","emi","hana","haruka","kaori","keiko","mai","mika","misaki","nanami","sakura","yui","yuka","yumi",
+      "aeran","eun","eunji","eonjeong","haeun","hye","hyekyung","jiyeon","jiyoung","minji","misun","myung","myungsook","okhee","sook","sunhee","sumin","sujin","yuna","yunkyung","youngsook","soyoung","jiyu",
+      "hoa","huong","lan","linh","mai","ngoc","nhung","thao","trang","uyen","yen",
+      "ayu","dewi","intan","kartika","lina","putri","sari","siti","wulan"
+    ].map(norm);
+
+    EXTRA_MALE_NAME_HINTS.forEach(x => MALE_NAME_HINTS.add(x));
+    EXTRA_FEMALE_NAME_HINTS.forEach(x => FEMALE_NAME_HINTS.add(x));
+
+    ["salih","cengiz","eyyup","eyüp","bayrak","halil","seraphan","korunur","birgul","birgül","vedat","ibrahim","mahmut","adem","kadir","raif","sebastiao","sebastião","cesar","henri","denis","serge","nico","noyan","murat","paul","marcel","dominique","francisco","alonso"].map(norm).forEach(x => MALE_NAME_HINTS.add(x));
+    ["neriman","nebahat","ceylan","hanife","aleyna","aylin","ayşenur","aysenur","büşra","busra","seda","yasemin","beste","defne","miray","güneş","gunes","suzanne","monique","monic","jeannette","elisabeth","judith","anne","lise","mariette","marie","helene","hélène","louise","annick","penelope","fadia","frederique","maria","aparecida","bertha","luiza","izabel","isabel","manuela","marleny","lucy","luz","yaneth","sarai","lucia","ana","jimena","sonia","paula","juliana","angustias","suzanne","nursel","seher","perihan","ümmü","ummu","birgul","birgül"].map(norm).forEach(x => FEMALE_NAME_HINTS.add(x));
+
+    // Extra Arabic/Egyptian clues common in tourism passenger lists.
+    ["hatem","sherif","salah","maged","hossam","farrag","alaaeldin","ramy","moustafa","hany","aly","maicel","magdy","daoud"].map(norm).forEach(x => MALE_NAME_HINTS.add(x));
+    ["riham","ayat"].map(norm).forEach(x => FEMALE_NAME_HINTS.add(x));
+
+    // MiniAI v6: extra romanized Chinese / Hong Kong / Taiwan given-name clues.
+    // These are useful for worst-case raw lists where each row contains only a romanized name.
+    const CHINESE_MALE_GIVEN_HINTS = [
+      "songjun", "baochen", "baocheng", "renchou", "jun", "cheng", "qiang", "wei", "jian", "jie", "hao", "tao", "lei", "feng", "long", "guang", "ming", "yong", "bo", "bin", "gang", "xiong", "sheng", "zheng", "dewei", "guowei", "xiaojun", "jianhua", "guangming"
+    ].map(norm);
+    const CHINESE_FEMALE_GIVEN_HINTS = [
+      "wenjing", "qiuli", "karsia", "shirley", "regina", "ngasheek", "hong", "si", "li", "lihua", "xia", "xiao", "fang", "ying", "yan", "jing", "wen", "mei", "lan", "min", "ping", "juan", "liqin", "hui", "xiaoli", "xue", "xinyi", "yuting", "jiaqi"
+    ].map(norm);
+    CHINESE_MALE_GIVEN_HINTS.forEach(x => MALE_NAME_HINTS.add(x));
+    CHINESE_FEMALE_GIVEN_HINTS.forEach(x => FEMALE_NAME_HINTS.add(x));
+
+    const GLOBAL_FAMILY_NAME_HINTS = new Set([
+      "kim","lee","li","park","pak","choi","jung","jeong","kang","cho","yoon","jang","lim","im","han","shin","song","seo","moon","yoo","yu","ryu","bae","kwon","hwang","hong","oh","yang","ko","go","baek","paik",
+      "sato","saito","suzuki","takahashi","tanaka","watanabe","ito","yamamoto","nakamura","kobayashi","kato","yoshida","yamada","sasaki","yamaguchi","matsumoto","inoue","kimura","hayashi","shimizu","mori",
+      "wang","zhang","liu","chen","yang","huang","zhao","wu","zhou","xu","sun","ma","zhu","hu","guo","lin","he","gao","luo","zheng","liang","xie","tang","deng",
+      "khan","singh","kaur","patel","sharma","gupta","kumar","devi","das","roy","chowdhury","hossain","rahman","islam","ali","ahmed","akhtar","mirza"
+    ].map(norm));
+
+    [
+      "cai", "cao", "yu", "yip", "ye", "chin", "chang", "pang", "che", "chan", "cheung", "chow", "lau", "leung", "wong", "ng", "tsang", "tse", "tang", "tsai", "hsu", "hsieh", "hsiao", "chia", "chiu"
+    ].map(norm).forEach(x => GLOBAL_FAMILY_NAME_HINTS.add(x));
+
+    const EAST_ASIAN_FAMILY_NAME_HINTS = new Set([
+      "kim", "lee", "li", "park", "pak", "choi", "jung", "jeong", "kang", "cho", "yoon", "jang", "lim", "im", "han", "shin", "song", "seo", "moon", "yoo", "yu", "ryu", "bae", "kwon", "hwang", "hong", "oh", "yang", "ko", "go", "baek", "paik",
+      "sato", "saito", "suzuki", "takahashi", "tanaka", "watanabe", "ito", "yamamoto", "nakamura", "kobayashi", "kato", "yoshida", "yamada", "sasaki", "yamaguchi", "matsumoto", "inoue", "kimura", "hayashi", "shimizu", "mori",
+      "wang", "zhang", "liu", "chen", "yang", "huang", "zhao", "wu", "zhou", "xu", "sun", "ma", "zhu", "hu", "guo", "lin", "he", "gao", "luo", "zheng", "liang", "xie", "tang", "deng", "cai", "cao", "yu", "yip", "ye", "chin", "chang", "pang", "che", "chan", "cheung", "chow", "lau", "leung", "wong", "ng", "tsang", "tse", "tsai", "hsu", "hsieh", "hsiao"
+    ].map(norm));
+
+    const GENDER_PART_HINTS = {
+      male: new Set(["abd","ali","bek","can","cem","han","mir","din","oglu","oğlu","ullah","uddin","cheol","chul","geun","woo","hwan","ho","seok","suk","jun","joon","jong","jae","minho","tae","hyung","sik","bok","hiro","taro","kazu","ken","jiro","suke","dai","ichi","raj","deep","jit","inder","vijay","esh","eshwar","prakash"].map(norm)),
+      female: new Set(["ay","gul","gül","nur","naz","su","iye","ela","ana","ina","hee","sook","eun","yeon","yun","ran","aeran","sun","kyung","jeong","hye","jiyeon","youngsook","okhee","ko","mi","ka","yumi","aiko","sakura","hana","priya","lakshmi","devi","rani","deepa","lata"].map(norm))
+    };
+
+    const EXTENDED_COUNTRY_HINTS = {
+      KR: ["kim","lee","park","choi","jung","jeong","kang","cho","yoon","jang","lim","im","han","shin","song","seo","moon","yoo","yu","ryu","bae","kwon","hwang","hong","oh","yang","ko","go","baek","paik","bokcheol","sunhee","geun","geunwoo","aeran","gilyun","youngjin","eonjeong","yunkyung","jaeho","jonghwan","myungsook","okhee","youngsook","hye","eun","sook","cheol","chul","woo","hwan","seok","seung","tae","hyun","minji","jiyeon","jihoon","jiyoung"],
+      JP: ["sato","saito","suzuki","takahashi","tanaka","watanabe","ito","yamamoto","nakamura","kobayashi","kato","yoshida","yamada","sasaki","yamaguchi","matsumoto","inoue","kimura","hayashi","shimizu","mori","akira","hiroshi","kenji","takashi","yuki","haruto","ren","sakura","yui","aiko","akiko","kaori","mika"],
+      CN: ["wang","li","zhang","liu","chen","yang","huang","zhao","wu","zhou","xu","sun","ma","zhu","hu","guo","lin","he","gao","luo","zheng","liang","xie","tang","deng","cai","cao","yu","chang","pang","che","wei","fang","ming","ying","jun","xia","xiao","lihua","jian","hao","wenjing","songjun","hong","qiuli","renchou","baocheng"],
+      HK: ["yip","ye","chin","chan","cheung","chow","lau","leung","wong","ng","pang","che","tsang","tse","karsia","shirley","regina","ngasheek"],
+      TW: ["chang","tsai","hsu","hsieh","hsiao","chiu","lin","chen","huang","wu","liu","wang","regina"],
+      IN: ["singh","kaur","patel","sharma","gupta","kumar","devi","reddy","rao","das","roy","mehta","jain","agarwal","iyer","nair","chopra","verma","malhotra","aditya","amit","anil","arjun","deepak","rahul","ravi","sanjay","suresh","vijay","vikram","anjali","deepa","divya","lakshmi","neha","pooja","priya"],
+      PK: ["khan","ali","ahmed","ahmad","hussain","hussein","abbasi","akhtar","butt","chaudhry","malik","mirza","qureshi","sheikh","siddiqui","tariq","imran","bilal","hamza","saad","ayesha","fatima","zainab"],
+      BD: ["rahman","islam","hossain","hasan","ahmed","akter","begum","alam","uddin","chowdhury","miah","ruma","nusrat","farzana"],
+      ID: ["agung","budi","eko","fajar","hadi","imam","joko","rizky","wahyu","dewi","sari","putri","siti","wulan","kartika"],
+      MY: ["bin","binti","aziz","azlan","farah","siti","nurul","aiman","afiq","hafiz","tan","lim","ong"],
+      TH: ["chai","somchai","somsak","suthida","siriporn","suwanna","niran","anong","sakchai","wong","phong","porn"],
+      VN: ["nguyen","tran","le","pham","hoang","huynh","phan","vu","vo","dang","bui","do","ngo","duong","anh","bao","binh","duc","hieu","linh","mai","ngoc","thao","trang"],
+      PH: ["santos","reyes","cruz","bautista","garcia","mendoza","aquino","ramos","delacruz","fernandez","gonzales","jose","juan","maria","luz","angelica"],
+      KZ: ["nursultan","yerlan","serik","aigerim","gulnara","askar","bekzat","nazarbayev","bayev","bayeva","uly","kyzy"],
+      KG: ["askar","bek","bekov","bekova","uulu","kyzy","aibek","nurbek","gulnara"],
+      UZ: ["aziz","bek","bekov","bekova","karimov","karimova","dilshod","shavkat","gulnara","nargiza"],
+      TM: ["berdimuhamedov","myrat","serdar","gurbanguly","guly","gulnar"],
+      TJ: ["rahmon","rahmonov","rahmonova","sharipov","sharipova","dushanbe"],
+      SA: ["al","abdullah","abdulaziz","fahad","faisal","nasser","saad","sultan","mohammed","alotaibi","alghamdi","alharbi","alshehri"],
+      EG: ["mohamed","ahmed","mahmoud","hassan","ibrahim","mostafa","adel","ashraf","elsayed","mona","dina","nour"],
+      IQ: ["ali","hussein","abbas","karim","kadhim","hayder","haider","zainab","fatima"],
+      SY: ["mohamed","mohammad","ahmad","omar","khaled","hassan","youssef","nour","bashar"],
+      LB: ["khoury","haddad","saad","georges","elias","nour","maya","fadi"],
+      JO: ["abed","azzam","fadi","laith","mohammad","noor","rana"],
+      MA: ["ben","el","mohamed","youssef","hassan","aziz","fatima","khadija","aicha","elidrissi","bennani"],
+      DZ: ["ben","bou","mohamed","ahmed","karim","yacine","fatima","aicha"],
+      TN: ["ben","mohamed","ali","youssef","anis","fatma","imen"],
+      IR: ["reza","hossein","mehdi","mohsen","javad","mohammadi","hosseini","ahmadi","rahimi","karimi","fatemeh","zahra","maryam","mahsa","parisa","shirin"],
+      IL: ["cohen","levi","mizrahi","peretz","david","moshe","yosef","noam","yael","tamar"],
+      AM: ["yan","ian","petrosyan","sargsyan","grigoryan","khachaturyan","armen","aram","ani","lilit"],
+      GE: ["shvili","vili","dze","giorgi","nino","tamar","kapanadze","beridze","gelashvili"],
+      AZ: ["aliyev","aliyeva","mammadov","mammadova","huseynov","huseynova","memmedov","memmedova","zade","emin","elnur","leyla"],
+      RU: ["ivanov","ivanova","petrov","petrova","smirnov","smirnova","sergey","dmitry","alexei","vladimir","olga","irina","svetlana","anastasia"],
+      UA: ["enko","shevchenko","kovalenko","bondarenko","oleksandr","andriy","olena","oksana","kateryna"],
+      PL: ["kowalski","nowak","wisniewski","zielinski","anna","agnieszka","piotr"],
+      DE: ["mann","berger","muller","mueller","schmidt","schneider","fischer","weber","wagner","becker","hoffmann","schulz","koch","richter"],
+      FR: ["dupont","moreau","laurent","leroy","roux","fournier","girard","andre","camille","antoine","julien"],
+      IT: ["rossi","russo","ferrari","esposito","bianchi","romano","colombo","ricci","marino","greco","bruno"],
+      ES: ["garcia","rodriguez","gonzalez","fernandez","lopez","martinez","sanchez","perez","gomez","martin","jimenez"],
+      NL: ["jansen","de jong","smit","meijer","visser","bakker","janssen"],
+      GB: ["smith","jones","brown","taylor","wilson","williams","johnson","davies","evans","thomas","walker","white","roberts","green"],
+      US: ["smith","johnson","williams","brown","jones","garcia","miller","davis","rodriguez","martinez","anderson","thomas","jackson"]
+    };
+
+    const COUNTRY_NAME_HINTS = {
+      TR: ["ahmet", "mehmet", "mustafa", "ayse", "ayşe", "fatma", "emine", "zeynep", "elif", "zehra", "huseyin", "hüseyin", "yilmaz", "yılmaz", "kaya", "demir", "celik", "çelik", "sahin", "şahin", "yildiz", "yıldız", "arslan", "dogan", "doğan", "kilic", "kılıç", "aslan", "ozdemir", "özdemir", "kahraman"],
+      DE: ["hans", "klaus", "jurgen", "jürgen", "wolfgang", "helmut", "stefan", "muller", "müller", "schmidt", "schneider", "fischer", "meyer", "weber", "wagner", "becker", "hoffmann"],
+      SY: ["mohamed", "muhammed", "muhammad", "mohammad", "ahmad", "ahmed", "omar", "khaled", "hassan", "hussein", "youssef", "yousef", "aisha", "ayesha", "fatima", "mariam", "maryam", "zainab", "zahra", "nour", "noor"],
+      AZ: ["ilham", "anar", "emin", "elnur", "aygun", "aygün", "leyla", "aliyev", "aliyeva", "huseynov", "hüseynov", "mammadov", "memmedov", "mammadova"],
+      RU: ["ivan", "sergey", "sergei", "alexei", "vladimir", "dmitry", "dmitri", "olga", "irina", "svetlana", "anastasia", "petrov", "ivanov", "sidorov", "smirnov"],
+      UA: ["oleksandr", "olena", "oksana", "kateryna", "andriy", "taras", "shevchenko", "kovalenko", "bondarenko"],
+      GE: ["giorgi", "nikoloz", "nino", "tamuna", "kapanadze", "beridze", "gelashvili"],
+      IR: ["reza", "ali", "hossein", "mehdi", "mohsen", "maryam", "zahra", "fatemeh", "mohammadi", "hosseini"],
+      BG: ["ivan", "georgi", "dimitar", "nikolay", "maria", "petrova", "ivanova", "georgieva"],
+      GB: ["john", "james", "william", "george", "charles", "oliver", "jack", "emily", "emma", "smith", "jones", "brown", "taylor", "wilson"],
+      US: ["john", "michael", "david", "james", "robert", "mary", "linda", "patricia", "jennifer", "williams", "johnson", "miller", "davis"],
+      FR: ["jean", "pierre", "louis", "antoine", "marie", "camille", "dubois", "bernard", "durand", "martin"],
+      IT: ["giuseppe", "antonio", "giovanni", "marco", "francesco", "sofia", "giulia", "rossi", "russo", "ferrari", "esposito"],
+      ES: ["juan", "jose", "carlos", "miguel", "manuel", "maria", "carmen", "garcia", "rodriguez", "gonzalez", "fernandez"],
+      NL: ["jan", "pieter", "johan", "willem", "anne", "de jong", "janssen", "visser", "smit", "bakker"]
+    };
+    for (const [code, words] of Object.entries(EXTENDED_COUNTRY_HINTS)) {
+      if (!COUNTRY_NAME_HINTS[code]) COUNTRY_NAME_HINTS[code] = [];
+      COUNTRY_NAME_HINTS[code].push(...words);
+    }
+    COUNTRY_NAME_HINTS.TR.push(...["salih","kaymak","cengiz","kilavuz","kılavuz","eyyup","eyüp","kirmizitas","kırmızıtaş","alkan","ismail","bayrak","halil","kirboga","kırboğa","korunur","birgul","birgül","bulut","aslı","demir","mahmut","noyan","sahami"].map(norm));
+    COUNTRY_NAME_HINTS.EG.push(...["hatem","maisara","sherif","azab","salah","eldessouki","riham","abdelmaksoud","mohamed","elerian","maged","elsahl","ibrahim","daoud","hossam","moussa","farrag","sharara","alaaeldin","elbesoumy","elkassas","ramy","elwahloul","elbahlohul","elwahloul","moustafa","rezk","badwy","hany","hegazia","aly","qunawy","elgaml","deif","maicel","magdy","gharib","ayat","ragheb"].map(norm));
+    if (!COUNTRY_NAME_HINTS.NL) COUNTRY_NAME_HINTS.NL = [];
+    COUNTRY_NAME_HINTS.NL.push(...["van","eerten","verdurme","linders","peperkamp","terpstra","boekhorst","giesbers","noord","bours","hautvast","setteur","roorda","scheibenstock","bom","bosch","corbey","prins","vuijsje","hulsebosch","fornier","dutch","nederland","netherlands"].map(norm));
+    if (!COUNTRY_NAME_HINTS.FR) COUNTRY_NAME_HINTS.FR = [];
+    COUNTRY_NAME_HINTS.FR.push(...["lafosse","gautier","margueritat","valluis","caspard","fougeirol","krebs","brule","brulé","landry","desforges","lesage","suzanne","denis","monique","serge","marie","louise","henri","frederique","elisabeth","judith","anne","lise","mariette","fadia"].map(norm));
+    if (!COUNTRY_NAME_HINTS.CA) COUNTRY_NAME_HINTS.CA = [];
+    COUNTRY_NAME_HINTS.CA.push(...["brule","brulé","landry","desforges","lesage","monique","suzanne","denis","serge","jeannette"].map(norm));
+    if (!COUNTRY_NAME_HINTS.BR) COUNTRY_NAME_HINTS.BR = [];
+    COUNTRY_NAME_HINTS.BR.push(...["aparecida","sebastiao","sebastião","luiza","izabel","pereira","amaral"].map(norm));
+    if (!COUNTRY_NAME_HINTS.CO) COUNTRY_NAME_HINTS.CO = [];
+    COUNTRY_NAME_HINTS.CO.push(...["forero","velandia","russi","rojas","vargas","gil","henao","escobar","gutierrez","posso","colmenares"].map(norm));
+    if (!COUNTRY_NAME_HINTS.ES) COUNTRY_NAME_HINTS.ES = [];
+    COUNTRY_NAME_HINTS.ES.push(...["moreno","sanchez","del","pozuelo","garcia","alvarez","rios","bonifaz","ocampo","vega","huete","herrera","barba"].map(norm));
+
+    Object.keys(COUNTRY_NAME_HINTS).forEach(code => {
+      COUNTRY_NAME_HINTS[code] = new Set(COUNTRY_NAME_HINTS[code].map(norm));
+    });
+
+    const SURNAME_HINTS = new Set([
+      "yilmaz", "yılmaz", "kaya", "demir", "celik", "çelik", "sahin", "şahin", "yildiz", "yıldız", "arslan", "aslan", "dogan", "doğan", "kilic", "kılıç", "ozdemir", "özdemir", "kahraman", "ozturk", "öztürk", "aydin", "aydın", "polat", "acar", "koc", "koç", "kara", "aksoy", "avci", "avcı", "guler", "güler", "bulut", "cetin", "çetin", "tas", "taş",
+      "muller", "müller", "schmidt", "schneider", "fischer", "meyer", "weber", "wagner", "becker", "hoffmann",
+      "smith", "jones", "brown", "taylor", "wilson", "williams", "johnson", "miller", "davis",
+      "garcia", "rodriguez", "gonzalez", "fernandez", "martin", "dubois", "bernard", "durand", "rossi", "russo", "ferrari", "esposito",
+      "aliyev", "aliyeva", "mammadov", "mammadova", "memmedov", "huseynov", "hüseynov",
+      "ivanov", "ivanova", "petrov", "petrova", "smirnov", "sidorov", "kovalenko", "bondarenko", "shevchenko",
+      "mohammadi", "hosseini", "hassan", "hussein", "khan", "ahmed", "ahmad"
+    ].map(norm));
+
+    function miniAIEnabled() {
+      return !els.useMiniAI || els.useMiniAI.checked;
+    }
+
+    function scoreGenderToken(token, weight = 1) {
+      const t = norm(token);
+      if (!t) return { male: 0, female: 0 };
+      let male = 0;
+      let female = 0;
+
+      const isFamily = GLOBAL_FAMILY_NAME_HINTS.has(t) || SURNAME_HINTS.has(t);
+      const familyPenalty = isFamily ? 0.35 : 1;
+
+      if (FEMALE_NAME_HINTS.has(t)) female += 3.2 * weight * familyPenalty;
+      if (MALE_NAME_HINTS.has(t)) male += 3.2 * weight * familyPenalty;
+
+      for (const part of GENDER_PART_HINTS.male) {
+        if (part.length >= 3 && t.includes(part)) male += 0.55 * weight * familyPenalty;
+      }
+      for (const part of GENDER_PART_HINTS.female) {
+        if (part.length >= 3 && t.includes(part)) female += 0.55 * weight * familyPenalty;
+      }
+
+      const maleEndings = [/han$/, /can$/, /tan$/, /din$/, /mir$/, /bek$/, /bey$/, /ullah$/, /uddin$/, /oglu$/, /oğlu$/, /ov$/, /ev$/, /son$/, /sen$/, /cheol$/, /chul$/, /woo$/, /hwan$/, /ho$/, /seok$/, /sik$/, /jun$/, /joon$/, /hiro$/, /taro$/, /suke$/];
+      const femaleEndings = [/nur$/, /gul$/, /gül$/, /naz$/, /su$/, /iye$/, /iyeh$/, /ina$/, /ana$/, /ela$/, /ette$/, /elle$/, /ova$/, /eva$/, /ska$/, /sook$/, /hee$/, /eun$/, /yeon$/, /hye$/, /mi$/, /ko$/, /ka$/, /a$/];
+      const femaleAExceptions = new Set(["mustafa", "musa", "isa", "yahya", "hamza", "riza", "rıza", "talha", "kaan", "safa", "murtaza", "luca", "andrea", "nikola", "ilya", "dima", "sasha", "misha", "kosta", "yura"].map(norm));
+
+      if (!FEMALE_NAME_HINTS.has(t) && !MALE_NAME_HINTS.has(t)) {
+        if (maleEndings.some(re => re.test(t))) male += 0.7 * weight;
+        if (femaleEndings.some(re => re.test(t)) && !femaleAExceptions.has(t)) female += 0.75 * weight;
+      }
+
+      return { male, female };
+    }
+
+    function guessGenderFromName(firstName, lastName, forceValue = false) {
+      const rawFirst = String(firstName || "");
+      const rawLast = String(lastName || "");
+      const firstTokens = norm(rawFirst).split(/\s+/).filter(Boolean);
+      const lastTokens = norm(rawLast).split(/\s+/).filter(Boolean);
+      const allTokens = [...firstTokens, ...lastTokens].filter(Boolean);
+      if (!allTokens.length) return forceValue ? "E" : "";
+
+      let maleScore = 0;
+      let femaleScore = 0;
+
+      // In many agency files for East Asian passengers, the family name can be in ADI and the given name in SOYADI.
+      // Therefore we score both fields, but give known family-name tokens much less gender weight.
+      firstTokens.forEach((t, idx) => {
+        const weight = idx === 0 ? 1.6 : 1.25;
+        const r = scoreGenderToken(t, weight);
+        maleScore += r.male;
+        femaleScore += r.female;
+      });
+
+      lastTokens.forEach((t, idx) => {
+        const weight = idx === 0 ? 1.45 : 1.15;
+        const r = scoreGenderToken(t, weight);
+        maleScore += r.male;
+        femaleScore += r.female;
+      });
+
+      const joined = norm(`${rawFirst} ${rawLast}`).replace(/\s+/g, "");
+      if (joined) {
+        const r = scoreGenderToken(joined, 1.1);
+        maleScore += r.male;
+        femaleScore += r.female;
+      }
+
+      const diff = Math.abs(maleScore - femaleScore);
+      if (femaleScore > maleScore && diff >= 0.35) return "K";
+      if (maleScore > femaleScore && diff >= 0.35) return "E";
+      if (!forceValue) return "";
+
+      const firstNonFamily = allTokens.find(t => !GLOBAL_FAMILY_NAME_HINTS.has(t) && !SURNAME_HINTS.has(t)) || allTokens[0] || "";
+      const femaleAExceptions = new Set(["mustafa", "musa", "isa", "yahya", "hamza", "riza", "rıza", "talha", "kaan", "safa", "murtaza", "luca", "andrea", "nikola", "ilya", "dima", "sasha"].map(norm));
+      if (firstNonFamily.endsWith("a") && !femaleAExceptions.has(firstNonFamily)) return "K";
+      if (/(hee|sook|eun|yeon|hye|aeran|okhee|sunhee|youngsook)$/.test(joined)) return "K";
+      if (/(cheol|chul|woo|hwan|ho|seok|sik|jun|joon|tae|hyung)$/.test(joined)) return "E";
+      return "E";
+    }
+
+    function guessCountryFromName(firstName, lastName) {
+      const raw = `${firstName || ""} ${lastName || ""}`;
+      const normalizedRaw = norm(raw);
+      const tokens = normalizedRaw.split(/\s+/).filter(Boolean);
+      if (!tokens.length && !raw.trim()) return "";
+
+      // Alphabet/script clues. These are useful when a PDF keeps native-script names.
+      if (/[\uAC00-\uD7AF]/.test(raw)) return "KR";                 // Hangul
+      if (/[\u3040-\u30FF]/.test(raw)) return "JP";                 // Hiragana/Katakana
+      if (/[\u4E00-\u9FFF]/.test(raw)) return "CN";                 // CJK ideographs, fallback China
+      if (/[\u0530-\u058F]/.test(raw)) return "AM";                 // Armenian
+      if (/[\u10A0-\u10FF]/.test(raw)) return "GE";                 // Georgian
+      if (/[\u0600-\u06FF]/.test(raw)) return "SY";                 // Arabic script fallback
+      if (/[çğıöşüÇĞİÖŞÜ]/.test(raw)) return "TR";
+
+      const scores = {};
+      const addScore = (code, amount) => { if (countryCodes.has(code)) scores[code] = (scores[code] || 0) + amount; };
+
+      const phrase = ` ${normalizedRaw} `;
+      for (const [code, hints] of Object.entries(COUNTRY_NAME_HINTS)) {
+        for (const hint of hints) {
+          const h = typeof hint === "string" ? norm(hint) : hint;
+          if (!h || h.length < 2) continue;
+          if (h.includes(" ")) {
+            if (phrase.includes(` ${h} `)) addScore(code, 2.4);
+          } else if (tokens.includes(h)) {
+            addScore(code, GLOBAL_FAMILY_NAME_HINTS.has(h) ? 1.65 : 1.25);
+          } else if (h.length >= 5 && normalizedRaw.includes(h)) {
+            addScore(code, 0.65);
+          }
+        }
+      }
+
+      for (const [idx, t] of tokens.entries()) {
+        const weight = idx === 0 ? 1.08 : 1.0;
+
+        // Strong country-specific family-name and morphology rules.
+        if (["kim","lee","park","pak","choi","jung","jeong","kang","cho","yoon","jang","lim","im","han","shin","song","seo","moon","yoo","yu","ryu","bae","kwon","hwang","hong","oh","baek","paik"].includes(t)) addScore("KR", 1.7 * weight);
+        if (/(cheol|chul|hyun|hwan|seok|sook|hee|eun|yeon|hye|woo|joon|jun|young|yong|tae|seung|ji)$/.test(t)) addScore("KR", 0.9 * weight);
+
+        if (/(sato|saito|suzuki|takahashi|tanaka|watanabe|yamamoto|nakamura|kobayashi|yamada|yamaguchi|matsumoto|inoue|kimura|hayashi)$/.test(t)) addScore("JP", 1.6 * weight);
+        if (/(hiro|taro|suke|moto|yama|kawa|mura|shima|saki)$/.test(t)) addScore("JP", 0.65 * weight);
+
+        if (/(wang|zhang|liu|chen|yang|huang|zhao|zhou|guo|liang|xie|deng|cai|cao|yu|sun|ma|zhu|hu|lin|he|gao|luo|zheng|tang|chang|pang|che)$/.test(t)) addScore("CN", 1.45 * weight);
+        if (/(wenjing|songjun|hong|qiuli|renchou|baocheng|xiao|ying|fang|mei|jing|ming|jian|hao|cheng)$/.test(t)) addScore("CN", 0.8 * weight);
+        if (["yip","chin","chan","cheung","chow","lau","leung","wong","ng","pang","che","tsang","tse"].includes(t)) addScore("HK", 1.65 * weight);
+        if (["karsia","shirley","regina","ngasheek"].includes(t)) addScore("HK", 0.65 * weight);
+        if (["chang","tsai","hsu","hsieh","hsiao","chiu"].includes(t)) addScore("TW", 1.05 * weight);
+        if (/(nguyen|tran|pham|hoang|huynh|phan|dang|duong)$/.test(t)) addScore("VN", 1.8 * weight);
+        if (/(singh|kaur|patel|sharma|gupta|kumar|devi|reddy|rao|iyer|nair)$/.test(t)) addScore("IN", 1.65 * weight);
+        if (/(rahman|islam|hossain|akter|begum|uddin|chowdhury)$/.test(t)) addScore("BD", 1.4 * weight);
+        if (/(khan|akhtar|mirza|qureshi|siddiqui|butt|chaudhry)$/.test(t)) addScore("PK", 1.4 * weight);
+
+        if (/oglu$|oğlu$/.test(t)) addScore("TR", 1.25 * weight);
+        if (/zade$/.test(t)) { addScore("AZ", 0.9 * weight); addScore("IR", 0.35 * weight); }
+        if (/yan$|ian$/.test(t) && !["noyan","ayan","cayan","kayan"].includes(t)) addScore("AM", 1.0 * weight);
+        if (/shvili$|vili$|dze$/.test(t)) addScore("GE", 1.4 * weight);
+        if (/ov$|ova$|ev$|eva$|in$|ina$/.test(t)) { addScore("RU", 0.85 * weight); addScore("UA", 0.35 * weight); }
+        if (/enko$|chuk$|yuk$/.test(t)) addScore("UA", 1.1 * weight);
+        if (/ski$|ska$|wicz$/.test(t)) addScore("PL", 0.9 * weight);
+        if (/son$|sen$/.test(t)) { addScore("GB", 0.35 * weight); addScore("DK", 0.45 * weight); addScore("NO", 0.45 * weight); }
+        if (/ez$/.test(t)) addScore("ES", 0.35 * weight);
+        if (["van", "te", "ter", "de", "den"].includes(t)) addScore("NL", 0.8 * weight);
+        if (["da", "do", "dos", "das"].includes(t)) { addScore("BR", 0.55 * weight); addScore("PT", 0.35 * weight); }
+        if (["del", "de", "la", "las", "los"].includes(t)) addScore("ES", 0.35 * weight);
+      }
+
+      // Common ambiguous English names should not override stronger country evidence.
+      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      if (!ranked.length) return "";
+      const [bestCode, bestScore] = ranked[0];
+      const secondScore = ranked[1]?.[1] || 0;
+      if (bestScore < 0.85) return "";
+      if (bestScore - secondScore < 0.25 && bestScore < 2.4) return "";
+      return bestCode;
+    }
+
+    function norm(s) {
+      return String(s || "")
+        .toLocaleLowerCase("tr-TR")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[ı]/g, "i")
+        .replace(/[ğ]/g, "g").replace(/[ü]/g, "u").replace(/[ş]/g, "s").replace(/[ö]/g, "o").replace(/[ç]/g, "c")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+    }
+
+    function log(message, reset = false) {
+      const stamp = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      const line = `[${stamp}] ${message}`;
+      if (!els.status) {
+        console.log(line);
+        return;
+      }
+      els.status.textContent = reset ? line : `${els.status.textContent}\n${line}`;
+      els.status.scrollTop = els.status.scrollHeight;
+    }
+
+    function toast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2800);
+    }
+
+    function fmtBytes(bytes) {
+      if (!bytes) return "0 B";
+      const units = ["B", "KB", "MB", "GB"];
+      let i = 0, n = bytes;
+      while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+      return `${n.toFixed(n >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[ch]));
+    }
+
+    function t(key, vars = {}) {
+      let value = (I18N[appLang] && I18N[appLang][key]) || I18N.en[key] || key;
+      for (const [k, v] of Object.entries(vars)) {
+        value = String(value).replaceAll(`{${k}}`, v);
+      }
+      return value;
+    }
+
+    function applyLanguage(lang) {
+      appLang = lang || "en";
+      localStorage.setItem("uetds_lang", appLang);
+      document.documentElement.lang = appLang;
+      if (els.languageSelect) els.languageSelect.value = appLang;
+
+      document.querySelectorAll("[data-i18n]").forEach(node => {
+        node.textContent = t(node.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-html]").forEach(node => {
+        node.innerHTML = t(node.dataset.i18nHtml);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(node => {
+        node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+      });
+
+      if (els.status?.dataset.defaultStatus === "1") {
+        els.status.textContent = t("defaultStatus");
+      }
+      renderTable();
+    }
+
+    function applyTheme(theme) {
+      appTheme = theme || "light";
+      document.body.dataset.theme = appTheme;
+      localStorage.setItem("uetds_theme", appTheme);
+      if (els.themeSelect) els.themeSelect.value = appTheme;
+    }
+
+    function toggleAiSettings() {
+      if (!els.aiSettings) return;
+      els.aiSettings.hidden = !els.useAI.checked;
+    }
+
+    function init() {
+      applyTheme(appTheme);
+      applyLanguage(appLang);
+      els.languageSelect?.addEventListener("change", e => applyLanguage(e.target.value));
+      els.themeSelect?.addEventListener("change", e => applyTheme(e.target.value));
+
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
+
+      ["dragenter", "dragover"].forEach(ev => els.drop.addEventListener(ev, e => {
+        e.preventDefault();
+        els.drop.classList.add("drag");
+      }));
+
+      ["dragleave", "drop"].forEach(ev => els.drop.addEventListener(ev, e => {
+        e.preventDefault();
+        els.drop.classList.remove("drag");
+      }));
+
+      els.drop.addEventListener("drop", e => handleFiles(e.dataTransfer.files));
+      els.fileInput.addEventListener("change", e => handleFiles(e.target.files));
+      els.runBtn.addEventListener("click", runExtraction);
+      els.demoBtn?.addEventListener("click", loadDemo);
+      els.clearBtn.addEventListener("click", clearAll);
+      els.useAI.addEventListener("change", toggleAiSettings);
+      toggleAiSettings();
+      els.addRowBtn.addEventListener("click", () => {
+        state.passengers.push(normalizePassenger({ countryCode: "TR" }));
+        renderTable();
+      });
+      els.exportBtn.addEventListener("click", () => exportXlsx(false));
+      els.templateBtn.addEventListener("click", () => exportXlsx(true));
+      els.exportCsvBtn.addEventListener("click", exportCsv);
+      updateMetrics();
+    }
+
+    async function handleFiles(fileList) {
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+
+      log(t("filesReading", { n: files.length }), true);
+      for (const file of files) {
+        state.files.push(file);
+        renderFileList();
+        try {
+          const ext = file.name.split(".").pop().toLowerCase();
+          if (["xlsx", "xls", "csv", "tsv"].includes(ext)) {
+            await readSpreadsheet(file);
+          } else if (ext === "pdf") {
+            await readPdf(file);
+          } else if (["jpg", "jpeg", "png", "webp", "bmp"].includes(ext)) {
+            await readImage(file);
+          } else if (["docx", "doc"].includes(ext)) {
+            await readOfficeDocument(file);
+          } else {
+            const text = await file.text();
+            state.rawTexts.push({ name: file.name, text });
+            log(t("textRead", { name: file.name, chars: text.length }));
+          }
+        } catch (err) {
+          console.error(err);
+          log(t("errorReading", { name: file.name, error: err.message || err }));
+        }
+      }
+      updateMetrics();
+      toast(t("fileReadingFinished"));
+    }
+
+    function renderFileList() {
+      els.fileList.innerHTML = state.files.map((f, idx) => `
+        <div class="file-item">
+          <span>${idx + 1}. ${escapeHtml(f.name)}</span>
+          <em>${fmtBytes(f.size)}</em>
+        </div>
+      `).join("");
+      updateMetrics();
+    }
+
+    async function readSpreadsheet(file) {
+      const ab = await file.arrayBuffer();
+      const workbook = XLSX.read(ab, { type: "array", cellDates: false, raw: false });
+      const textParts = [];
+      const sheets = [];
+
+      workbook.SheetNames.forEach(sheetName => {
+        const ws = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: false });
+        sheets.push({ fileName: file.name, sheetName, rows });
+        textParts.push(`Sheet: ${sheetName}`);
+        rows.forEach(row => textParts.push(row.map(v => String(v ?? "").trim()).join("\t")));
+      });
+
+      state.workbookSheets.push(...sheets);
+      state.rawTexts.push({ name: file.name, text: textParts.join("\n") });
+      log(`Spreadsheet read: ${file.name} (${workbook.SheetNames.length} sheet(s))`);
+    }
+
+    async function readPdf(file) {
+      if (!window.pdfjsLib) throw new Error("PDF.js could not load.");
+      const ab = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+      const pages = [];
+      log(`PDF loaded: ${file.name} (${pdf.numPages} page(s))`);
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        let text = pdfTextContentToLines(content.items);
+        if ((!text || text.trim().length < 20) && els.useOCR.checked) {
+          text = await ocrPdfPage(page, i, pdf.numPages);
+        }
+        pages.push(`--- Page ${i} ---\n${text}`);
+        log(`PDF page ${i}/${pdf.numPages}: ${text.length} characters`);
+      }
+
+      state.rawTexts.push({ name: file.name, text: pages.join("\n") });
+    }
+
+    async function readImage(file) {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error("Image could not be read."));
+        reader.readAsDataURL(file);
+      });
+
+      // Keep the raw image so the built-in Smart AI can read it directly with vision.
+      const mediaType = (dataUrl.match(/^data:([^;]+);base64,/) || [])[1] || file.type || "image/png";
+      const base64 = dataUrl.split(",")[1] || "";
+      state.images.push({ name: file.name, mediaType, base64 });
+      log(`Image stored for Smart AI vision: ${file.name}`);
+
+      // If Smart AI is disabled, fall back to local Tesseract OCR so the free parser still has text.
+      if (!els.useSmartAI || !els.useSmartAI.checked || els.useOCR.checked) {
+        log(`Image OCR: ${file.name}. This can take a little while...`);
+        if (!window.Tesseract) {
+          await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");
+        }
+        let text = "";
+        try {
+          const result = await Tesseract.recognize(dataUrl, "tur+eng");
+          text = result?.data?.text || "";
+        } catch (err) {
+          console.warn(err);
+          const result = await Tesseract.recognize(dataUrl, "eng");
+          text = result?.data?.text || "";
+        }
+        state.rawTexts.push({ name: file.name, text });
+        log(`Image OCR finished: ${file.name} (${text.length} characters)`);
+      }
+    }
+
+    async function readOfficeDocument(file) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      const ab = await file.arrayBuffer();
+      let text = "";
+      if (ext === "docx") {
+        if (!window.mammoth) {
+          await loadScript("https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js");
+        }
+        const result = await mammoth.extractRawText({ arrayBuffer: ab });
+        text = result.value || "";
+      } else {
+        text = recoverTextFromBinary(ab);
+      }
+      state.rawTexts.push({ name: file.name, text });
+      log(`Word document read: ${file.name} (${text.length} characters)`);
+    }
+
+    function recoverTextFromBinary(arrayBuffer) {
+      const bytes = new Uint8Array(arrayBuffer);
+      const decoders = ["windows-1254", "utf-8", "windows-1252"];
+      let best = "";
+      for (const enc of decoders) {
+        try {
+          const decoded = new TextDecoder(enc, { fatal: false }).decode(bytes);
+          const cleaned = decoded
+            .replace(/\u0000/g, " ")
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, " ")
+            .split(/\n|\r|\u2028|\u2029/)
+            .map(line => line.replace(/\s+/g, " ").trim())
+            .filter(line => line.length >= 2 && /[A-Za-zÇĞİÖŞÜçğıöşü]/.test(line))
+            .join("\n");
+          if (cleaned.length > best.length) best = cleaned;
+        } catch {}
+      }
+      if (best.length < 20) {
+        const ascii = [];
+        let run = "";
+        for (const b of bytes) {
+          if ((b >= 32 && b <= 126) || b >= 160 || b === 10 || b === 13) run += String.fromCharCode(b);
+          else {
+            if (run.length >= 3) ascii.push(run);
+            run = "";
+          }
+        }
+        if (run.length >= 3) ascii.push(run);
+        best = ascii.join("\n");
+      }
+      return best;
+    }
+
+    function pdfTextContentToLines(items) {
+      const rows = [];
+      for (const item of items || []) {
+        const str = String(item.str || "").trim();
+        if (!str) continue;
+        const tr = item.transform || [];
+        const x = Number(tr[4] || 0);
+        const y = Number(tr[5] || 0);
+        let row = rows.find(r => Math.abs(r.y - y) <= 3.5);
+        if (!row) {
+          row = { y, items: [] };
+          rows.push(row);
+        }
+        row.items.push({ x, str });
+      }
+      return rows
+        .sort((a, b) => b.y - a.y)
+        .map(row => row.items
+          .sort((a, b) => a.x - b.x)
+          .map(item => item.str)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim())
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    async function ocrPdfPage(page, pageNo, totalPages) {
+      log(`OCR page ${pageNo}/${totalPages}; this may take a while...`);
+      if (!window.Tesseract) {
+        await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");
+      }
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const result = await Tesseract.recognize(canvas, "tur+eng");
+      return result.data.text || "";
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const existing = [...document.scripts].find(s => s.src === src);
+        if (existing) return resolve();
+        const s = document.createElement("script");
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error(`Could not load ${src}`));
+        document.head.appendChild(s);
+      });
+    }
+
+    async function runExtraction() {
+      const pasted = els.sourceText.value.trim();
+      const structuredFileNames = new Set((state.workbookSheets || []).map(s => s.fileName));
+      const rawText = [
+        ...state.rawTexts.map(x => x.text),
+        pasted ? `PASTED TEXT\n${pasted}` : ""
+      ].filter(Boolean).join("\n\n");
+      const localRawText = [
+        ...state.rawTexts
+          .filter(x => !structuredFileNames.has(x.name))
+          .map(x => x.text),
+        pasted || ""
+      ].filter(Boolean).join("\n\n");
+
+      const images = state.images || [];
+
+      if (!rawText.trim() && !state.workbookSheets.length && !images.length) {
+        toast("Upload a file or paste passenger text first.");
+        return;
+      }
+
+      els.runBtn.disabled = true;
+      els.runBtn.textContent = t("extracting");
+      log("Extraction started...", true);
+
+      let passengers = [];
+
+      try {
+        const runLocalParser = () => {
+          const workbookRows = extractFromWorkbookSheets(state.workbookSheets);
+          const textRows = extractFromText(localRawText);
+          if (structuredFileNames.size) {
+            log(`Structured spreadsheet mode: ${structuredFileNames.size} spreadsheet file(s) parsed from rows only; duplicate raw spreadsheet text skipped.`);
+          }
+          return [...workbookRows, ...textRows];
+        };
+
+        if (els.useSmartAI && els.useSmartAI.checked) {
+          log("Built-in Smart AI enabled. Reading text and images...");
+          try {
+            passengers = await extractWithSmartAI(rawText, images);
+            log(`Smart AI returned ${passengers.length} passenger candidate(s).`);
+            if (!passengers.length) {
+              log("Smart AI returned no rows; using free local parser as backup.");
+              passengers = runLocalParser();
+              log(`Local parser found ${passengers.length} passenger candidate(s).`);
+            }
+          } catch (smartErr) {
+            log(`Smart AI failed: ${smartErr.message || smartErr}`);
+            if (els.useAI.checked && els.apiKey.value.trim()) {
+              log("Falling back to your configured API endpoint...");
+              try {
+                passengers = await extractWithAI(rawText);
+                log(`AI returned ${passengers.length} passenger candidate(s).`);
+              } catch (apiErr) {
+                log(`API failed: ${apiErr.message || apiErr}. Using free local parser.`);
+                passengers = runLocalParser();
+                log(`Local parser found ${passengers.length} passenger candidate(s).`);
+              }
+            } else {
+              log("Using FREE local parser instead.");
+              if (miniAIEnabled()) log("Free MiniAI v6 local classifier enabled.");
+              passengers = runLocalParser();
+              log(`Local parser found ${passengers.length} passenger candidate(s).`);
+            }
+          }
+        } else if (els.useAI.checked && els.apiKey.value.trim()) {
+          log("AI mode enabled. Sending extracted text to the configured endpoint...");
+          try {
+            passengers = await extractWithAI(rawText);
+            log(`AI returned ${passengers.length} passenger candidate(s).`);
+          } catch (apiErr) {
+            log(`AI failed: ${apiErr.message || apiErr}`);
+            log("Using FREE local parser instead. No API quota is required for this fallback.");
+            if (miniAIEnabled()) log("Free MiniAI v6 local classifier enabled for name/surname, gender and country guessing.");
+            passengers = runLocalParser();
+            log(`Local parser found ${passengers.length} passenger candidate(s).`);
+          }
+        } else {
+          if (els.useAI.checked && !els.apiKey.value.trim()) {
+            log("AI mode selected but no API key provided. Using FREE local parser instead.");
+          } else {
+            log("Free local mode enabled. Processing in this browser without API calls.");
+          }
+          if (miniAIEnabled()) log("Free MiniAI v6 local classifier enabled for name/surname, gender and country guessing.");
+          passengers = runLocalParser();
+          log(`Local parser found ${passengers.length} passenger candidate(s).`);
+        }
+
+        const normalizedRows = passengers.map(normalizePassenger)
+          .filter(p => p.firstName || p.lastName || p.idOrPassportNo || p.phone);
+        const beforeConfidenceFilter = normalizedRows.length;
+        // Smart AI rows bypass the confidence threshold entirely (threshold = 0);
+        // only local-parser rows are held to MIN_CONFIDENCE.
+        const confidentRows = normalizedRows.filter(p => p._smart || (Number(p.confidence) || 0) >= MIN_CONFIDENCE);
+        const removedLowConfidence = beforeConfidenceFilter - confidentRows.length;
+        if (removedLowConfidence > 0) {
+          log(`Removed ${removedLowConfidence} low-confidence local row(s) below ${Math.round(MIN_CONFIDENCE * 100)}%.`);
+        }
+        passengers = dedupePassengers(confidentRows);
+
+        state.passengers = passengers;
+        renderTable();
+        log(`Ready. ${state.passengers.length} passenger row(s) prepared.`);
+        toast(`Prepared ${state.passengers.length} row(s)`);
+      } catch (err) {
+        console.error(err);
+        log(`ERROR: ${err.message || err}`);
+        toast("Extraction failed. Please check the input format.");
+      } finally {
+        els.runBtn.disabled = false;
+        els.runBtn.textContent = t("extractBtn");
+        updateMetrics();
+      }
+    }
+
+    const SMART_AI_MODELS = ["claude-opus-4-8", "claude-sonnet-4-6", "claude-3-5-sonnet-latest"];
+
+    function buildSmartAiSystemPrompt() {
+      const codes = COUNTRY_ROWS.map(c => `${String(c.code).toUpperCase()}=${c.name}`).join("; ");
+      return [
+        "You are an expert data-extraction engine that turns messy Turkish/international travel and booking documents into clean passenger records for the Turkish UETDS 'excelyolcusablon' Excel template. Accuracy is critical: these rows are submitted to a government system, so every passenger must be captured and every field must be correct.",
+        "",
+        "INPUT can be any mix of: raw pasted text, spreadsheet rows (tab-separated), copied PDF tables, OCR output, and images (printed OR handwritten, in any orientation). Read ALL of it. When both an image and its OCR text are provided for the same list, trust the image for characters/spelling and use the text only to cross-check digits.",
+        "",
+        "OUTPUT: return ONLY a single JSON object, no markdown fences, no commentary:",
+        '{"passengers":[{"countryCode":"","firstName":"","lastName":"","idOrPassportNo":"","gender":"E|K","phone":"","hesCode":"","seatNo":"","confidence":0.0,"notes":""}]}',
+        "",
+        "WHO IS A PASSENGER:",
+        "- Extract EVERY real human traveler, once each. Do not skip anyone, even if their row is partially unreadable.",
+        "- IGNORE non-passenger content: column headers/titles ('ADI SOYADI','AD SOYAD','İSİM','NAME','SURNAME','T.C','TC','TCKN','PASAPORT NO','PASSPORT','SIRA','NO','SN','#','CINSIYET','UYRUK','TELEFON'), section labels, hotel/room numbers ('ODA','ROOM','DBL','SGL','TWIN'), group/agency/company names, dates, tour codes, seat maps, prices, totals, page numbers, footers and legal text.",
+        "- Do NOT invent people. If a line is clearly a label or blank, drop it.",
+        "- Drivers/guides/personnel: include ONLY if they are listed as travelers with the passengers; otherwise skip.",
+        "",
+        "NAME SPLITTING (firstName / lastName):",
+        "- firstName = given name(s); lastName = family name. Keep multi-part given names together in firstName.",
+        "- Turkish and most European lists: the LAST token is the surname (e.g. 'Şerefhan Korkung' -> first 'Şerefhan', last 'Korkung'; 'Mehmet Ali Yıldız' -> first 'Mehmet Ali', last 'Yıldız').",
+        "- ALL-CAPS surname convention: if part of the name is in ALL CAPS and part is not (e.g. 'Suzanne BRULÉ', 'RIHAM Abdelmaksoud'), the ALL-CAPS part is the surname regardless of position.",
+        "- Arabic/Egyptian romanized names (e.g. 'HATEM MAISARA','MOHAMED ELERIAN'): treat the LAST token as the family name unless a column clearly separates given/family.",
+        "- If a document has an explicit surname column, trust it over positional guessing.",
+        "- Preserve ALL diacritics and Turkish letters exactly: ç Ç ğ Ğ ı İ i ö Ö ş Ş ü Ü, and é è ê ë á à â ñ ô, etc. Never transliterate to ASCII. Fix obvious OCR letter swaps only when you are confident (e.g. handwritten 'l'/'1', 'O'/'0').",
+        "- Use proper title case for output names, but keep internal capitalization of surnames like 'BRULÉ' as normal title case 'Brulé' unless the whole list is uppercase.",
+        "",
+        "GENDER (MANDATORY, exactly 'E' or 'K'):",
+        "- E = male (Erkek/Male/Mr/Bay), K = female (Kadın/Female/Mrs/Ms/Miss/Bayan).",
+        "- If a title/marker column exists (MR/MRS/MS, BAY/BAYAN, M/F), use it.",
+        "- Otherwise infer from the FIRST name using broad real-world knowledge across Turkish, Arabic, French, English, German and other cultures. Examples: Turkish male: Ali, Mehmet, Halil, Eyyüp, Cengiz, Vedat, Şerefhan; Turkish female: Ayşe, Fatma, Zeynep, Kübra, Birgül; Arabic male: Mohamed, Ahmed, Hossam, Ibrahim; Arabic female: Riham, Ayat, Salma; French male: Denis, Serge, Paul; French female: Suzanne, Monique.",
+        "- Ambiguous unisex names: pick the statistically more likely gender and lower confidence slightly. NEVER leave gender blank.",
+        "",
+        "COUNTRY CODE (UETDS 2-letter codes below):",
+        "- If nationality/country/passport-issuing country is written, map it to the correct code.",
+        "- A valid 11-digit Turkish ID (TCKN) => TR. Turkish names/surnames => TR.",
+        "- Passport-only lists: infer citizenship from the name + script. Arabic names with 'A'+8-digit passports are typically Egyptian => EG. French names => FR. German => DE. English/anglophone ambiguous names: choose the most likely, lower confidence.",
+        "- If genuinely undeterminable, use TR and set confidence <= 0.5.",
+        "",
+        "ID / PASSPORT (idOrPassportNo):",
+        "- TCKN: exactly 11 digits, no spaces. Passport: letters+digits, no spaces. Strip all spaces and separators.",
+        "- Cross-check against any provided text/OCR. If a handwritten number is clearly truncated, unreadable, or absent, output '1' (single digit one) as a placeholder and note it.",
+        "- Never merge two people's numbers; never fabricate a plausible-looking number.",
+        "",
+        "PHONE / HES / SEAT: only if explicitly present. Never invent. Phone digits only (Turkish mobiles as 05XXXXXXXXX when possible).",
+        "",
+        "QUALITY:",
+        "- Preserve the original passenger order.",
+        "- Merge exact duplicates (same name + same id) into one row.",
+        "- confidence in [0,1] = your certainty about that whole row (name+gender+country+id together). Be honest; do not inflate.",
+        "- notes: short, only for genuine issues (e.g. 'id unreadable', 'gender inferred').",
+        "",
+        "Valid UETDS country codes (CODE=Name): " + codes
+      ].join("\n");
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function callAnthropic(messages, systemPrompt, opts = {}) {
+      const prefill = opts.prefill || "";
+      const models = opts.models || SMART_AI_MODELS;
+      let lastErr = null;
+
+      for (let mi = 0; mi < models.length; mi++) {
+        const model = models[mi];
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const msgs = prefill
+              ? [...messages, { role: "assistant", content: prefill }]
+              : messages;
+            const resp = await fetch("https://api.anthropic.com/v1/messages", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                model,
+                max_tokens: 16000,
+                temperature: 0,
+                system: systemPrompt,
+                messages: msgs
+              })
+            });
+
+            if (resp.status === 429 || resp.status >= 500) {
+              lastErr = new Error(`Smart AI transient error ${resp.status}`);
+              await sleep(700 * Math.pow(2, attempt));
+              continue;
+            }
+
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+              // Model not available -> try next model immediately.
+              const msg = data?.error?.message || `Smart AI error ${resp.status}`;
+              lastErr = new Error(msg);
+              if (resp.status === 400 || resp.status === 404) break;
+              await sleep(500 * Math.pow(2, attempt));
+              continue;
+            }
+
+            const text = (Array.isArray(data.content) ? data.content : [])
+              .filter(b => b && b.type === "text")
+              .map(b => b.text)
+              .join("\n");
+            return prefill ? prefill + text : text;
+          } catch (err) {
+            lastErr = err;
+            await sleep(500 * Math.pow(2, attempt));
+          }
+        }
+      }
+      throw lastErr || new Error("Smart AI request failed.");
+    }
+
+    async function smartExtractOne(content, label) {
+      const system = buildSmartAiSystemPrompt();
+      const out = await callAnthropic([{ role: "user", content }], system, { prefill: '{"passengers":' });
+      const json = safeJsonParse(out);
+      if (!json || !Array.isArray(json.passengers)) {
+        throw new Error(`Smart AI response for ${label} did not contain { passengers: [...] }.`);
+      }
+      return json.passengers;
+    }
+
+    async function extractWithSmartAI(rawText, images) {
+      const all = [];
+
+      const src = (rawText || "").trim();
+      const textChunks = [];
+      const maxChars = 24000;
+      if (src) {
+        for (let i = 0; i < src.length; i += maxChars) textChunks.push(src.slice(i, i + maxChars));
+      }
+
+      // 1) Images: send each image WITH the full extracted text so the model can
+      //    cross-check handwritten digits against any OCR/spreadsheet text present.
+      const textHint = src ? src.slice(0, 6000) : "";
+      for (let i = 0; i < (images || []).length; i++) {
+        const img = images[i];
+        log(`Smart AI reading image ${i + 1}/${images.length}: ${img.name}...`);
+        const content = [
+          { type: "image", source: { type: "base64", media_type: img.mediaType, data: img.base64 } },
+          { type: "text", text:
+              "Extract ALL passengers from this image. It may be handwritten and rotated. Read every row carefully.\n" +
+              (textHint ? `\nFor cross-checking numbers only, here is any machine-read text from the same batch (may be noisy):\n"""\n${textHint}\n"""\n` : "") +
+              "Return only the JSON object from the system prompt." }
+        ];
+        try {
+          const rows = await smartExtractOne(content, img.name);
+          rows.forEach(r => r._smart = true);
+          all.push(...rows);
+          log(`Smart AI image ${img.name}: ${rows.length} passenger(s).`);
+        } catch (err) {
+          log(`Smart AI image failed (${img.name}): ${err.message || err}`);
+        }
+      }
+
+      // 2) Text / spreadsheet / PDF chunks.
+      for (let i = 0; i < textChunks.length; i++) {
+        if (textChunks.length > 1) log(`Smart AI text chunk ${i + 1}/${textChunks.length}...`);
+        else log("Smart AI reading extracted text...");
+        const content = [{ type: "text", text: `Extract passengers from this document text:\n\n${textChunks[i]}` }];
+        const rows = await smartExtractOne(content, `text chunk ${i + 1}`);
+        rows.forEach(r => r._smart = true);
+        all.push(...rows);
+      }
+
+      return all;
+    }
+
+    async function extractWithAI(rawText) {
+      const maxChars = 14000;
+      const chunks = [];
+      for (let i = 0; i < rawText.length; i += maxChars) {
+        chunks.push(rawText.slice(i, i + maxChars));
+      }
+
+      const all = [];
+      for (let i = 0; i < chunks.length; i++) {
+        log(`AI chunk ${i + 1}/${chunks.length}...`);
+        const body = {
+          model: els.modelName.value.trim() || "gpt-4.1-mini",
+          temperature: 0,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content: [
+                "You extract passenger records for the Turkish UETDS excelyolcusablon Excel template.",
+                "Return only valid JSON.",
+                "Schema: {\"passengers\":[{\"countryCode\":\"TR|DE|...\",\"firstName\":\"\",\"lastName\":\"\",\"idOrPassportNo\":\"\",\"gender\":\"E|K|\",\"phone\":\"\",\"hesCode\":\"\",\"seatNo\":\"\",\"confidence\":0.0,\"notes\":\"\"}]}",
+                "Rules:",
+                "- countryCode must be an ISO-like country code from Turkish UETDS country codes when visible; use TR for Turkish citizens or valid 11-digit Turkish ID.",
+                "- If country/nationality is missing, infer the most likely country from the passenger name; for Turkish-looking names use TR. If still uncertain, use TR with lower confidence.",
+                "- idOrPassportNo should contain TC Kimlik number or passport number only, no spaces. If no TC/passport number is available, write 1.",
+                "- gender E for Erkek/Male/M, K for Kadın/Female/F. If missing, infer gender from the first name when possible.",
+                "- phone and hesCode may be blank when they are not visible. Do not invent phone or HES values.",
+                "- Split full names into firstName and lastName. If uncertain, put final token as lastName.",
+                "- Ignore drivers/personnel unless they are clearly passengers."
+              ].join("\n")
+            },
+            {
+              role: "user",
+              content: `Extract passengers from this document text:\n\n${chunks[i]}`
+            }
+          ]
+        };
+
+        const resp = await fetch(els.apiEndpoint.value.trim(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${els.apiKey.value.trim()}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          throw new Error(data.error?.message || `API error ${resp.status}`);
+        }
+
+        const text = data.choices?.[0]?.message?.content || data.output_text || findOutputText(data);
+        const json = safeJsonParse(text);
+        if (!json || !Array.isArray(json.passengers)) {
+          throw new Error("AI response did not contain { passengers: [...] }.");
+        }
+        all.push(...json.passengers);
+      }
+
+      return all;
+    }
+
+    function findOutputText(data) {
+      const out = [];
+      function walk(x) {
+        if (!x) return;
+        if (typeof x === "string") return;
+        if (Array.isArray(x)) return x.forEach(walk);
+        if (typeof x === "object") {
+          if (x.type === "output_text" && x.text) out.push(x.text);
+          Object.values(x).forEach(walk);
+        }
+      }
+      walk(data.output);
+      return out.join("\n");
+    }
+
+    function safeJsonParse(text) {
+      if (!text) return null;
+      let stripped = String(text).replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+      try { return JSON.parse(stripped); } catch {}
+
+      // Grab from the first { to a brace-balanced close, ignoring braces inside strings.
+      const start = stripped.indexOf("{");
+      if (start === -1) return null;
+      let depth = 0, inStr = false, esc = false, end = -1;
+      for (let i = start; i < stripped.length; i++) {
+        const ch = stripped[i];
+        if (esc) { esc = false; continue; }
+        if (ch === "\\") { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === "{") depth++;
+        else if (ch === "}") { depth--; if (depth === 0) { end = i; break; } }
+      }
+      if (end !== -1) {
+        try { return JSON.parse(stripped.slice(start, end + 1)); } catch {}
+      }
+
+      // Truncated output: try to close an open passengers array gracefully.
+      let candidate = stripped.slice(start);
+      const lastObj = candidate.lastIndexOf("}");
+      if (lastObj !== -1) {
+        candidate = candidate.slice(0, lastObj + 1) + "]}";
+        try { return JSON.parse(candidate); } catch {}
+      }
+      const greedy = stripped.match(/\{[\s\S]*\}/);
+      if (greedy) { try { return JSON.parse(greedy[0]); } catch {} }
+      return null;
+    }
+
+    function extractFromWorkbookSheets(sheets) {
+      const out = [];
+      for (const sheet of sheets || []) {
+        const rows = sheet.rows || [];
+        const headerInfo = findHeaderRow(rows);
+        if (headerInfo) {
+          const standard = extractHeaderedRows(sheet, headerInfo);
+          const multi = extractMultiPassengerRows(sheet, headerInfo.rowIndex);
+          out.push(...standard, ...multi);
+        } else {
+          out.push(...extractHeaderlessSpreadsheetRows(sheet));
+        }
+      }
+      return out;
+    }
+
+    function cellText(v) {
+      if (v === null || v === undefined) return "";
+      return String(v).replace(/\s+/g, " ").trim();
+    }
+
+    function extractHeaderedRows(sheet, headerInfo) {
+      const out = [];
+      const rows = sheet.rows || [];
+      for (let r = headerInfo.rowIndex + 1; r < rows.length; r++) {
+        const row = rows[r] || [];
+        const empty = row.every(v => !cellText(v));
+        if (empty) continue;
+
+        const p = {};
+        for (const [field, idx] of Object.entries(headerInfo.map)) {
+          p[field] = cellText(row[idx]);
+        }
+
+        if (p.fullName) {
+          const parts = splitName(p.fullName);
+          if (!p.firstName || !p.lastName || norm(p.firstName) === norm(p.lastName)) {
+            p.firstName = parts.firstName;
+            p.lastName = parts.lastName;
+          }
+        }
+
+        if (p.firstName && p.lastName && norm(p.firstName) === norm(p.lastName) && p.firstName.split(/\s+/).length > 1) {
+          const parts = splitName(p.firstName);
+          p.firstName = parts.firstName;
+          p.lastName = parts.lastName;
+        }
+
+        if (!p.idOrPassportNo && p.tcKimlikPasaportNo) p.idOrPassportNo = p.tcKimlikPasaportNo;
+        if (p.firstName || p.lastName || p.fullName || p.idOrPassportNo || p.phone) {
+          p.source = `${sheet.fileName} / ${sheet.sheetName}`;
+          p.confidence = .80;
+          out.push(p);
+        }
+      }
+      return out;
+    }
+
+    function extractMultiPassengerRows(sheet, headerRowIndex) {
+      const rows = sheet.rows || [];
+      const headers = (rows[headerRowIndex] || []).map(cellText);
+      const headerNorm = headers.map(norm);
+      const nameCols = [];
+      const idCols = [];
+      const phoneCols = [];
+
+      headerNorm.forEach((h, idx) => {
+        if (!h) return;
+        if (/(tc|tckn|kimlik|pasaport|passport|identity)/.test(h)) idCols.push(idx);
+        if (/(telefon|phone|gsm|mobile|tel|irtibat)/.test(h)) phoneCols.push(idx);
+        const isName = /(misafir|uye adi|üye adi|uye adı|üye adı|cocuk adi|çocuk adi|cocuk adı|çocuk adı|es$|eş$|adi soyadi|isim soyisim|name s|passenger)/.test(h)
+          && !/(otel|hotel|fabrika|sube|şube|ulke|ülke|dogum|doğum|yas|yaş|tarih|room|note|telefon|kimlik|pasaport)/.test(h);
+        if (isName) nameCols.push(idx);
+      });
+
+      if (!nameCols.length) return [];
+      const out = [];
+      for (let r = headerRowIndex + 1; r < rows.length; r++) {
+        const row = rows[r] || [];
+        const rowEmpty = row.every(v => !cellText(v));
+        if (rowEmpty) continue;
+        const primaryIdx = nameCols[0];
+        const primaryParts = splitName(cellText(row[primaryIdx]));
+        const rowFamilyName = primaryParts.lastName || "";
+
+        nameCols.forEach((idx, order) => {
+          let fullName = cellText(row[idx]);
+          if (!isLikelyPersonCell(fullName)) return;
+          const h = headerNorm[idx] || "";
+          if (/cocuk|çocuk/.test(h) && fullName.split(/\s+/).length === 1 && rowFamilyName) {
+            fullName = `${fullName} ${rowFamilyName}`;
+          }
+          const nextName = nameCols.find(c => c > idx) ?? row.length + 5;
+          const idIdx = idCols.find(c => c > idx && c < nextName) ?? (order === 0 ? idCols.find(c => c > idx) : undefined);
+          const phoneIdx = phoneCols.find(c => c > idx && c < nextName) ?? (order === 0 ? phoneCols[0] : undefined);
+          const p = { fullName, confidence: .84, source: `${sheet.fileName} / ${sheet.sheetName}` };
+          if (idIdx !== undefined) p.idOrPassportNo = cellText(row[idIdx]);
+          if (phoneIdx !== undefined) p.phone = cellText(row[phoneIdx]);
+          out.push(p);
+        });
+      }
+      return out;
+    }
+
+    function extractHeaderlessSpreadsheetRows(sheet) {
+      const out = [];
+      const rows = sheet.rows || [];
+      for (const row of rows) {
+        const cells = (row || []).map(cellText).filter(Boolean);
+        if (!cells.length) continue;
+        const first = cells[0];
+        let nameCandidate = "";
+        let idCandidate = "";
+        let phoneCandidate = "";
+        let countryCandidate = "";
+        let genderCandidate = "";
+
+        if (/^\d{1,4}[.)-]?$/.test(first) && cells[1]) {
+          nameCandidate = cells[1];
+          for (const c of cells.slice(2)) {
+            if (!idCandidate) {
+              const tckn = findTCKN(c);
+              if (tckn) idCandidate = tckn.value;
+              else if (looksLikePassport(c)) idCandidate = c;
+            }
+            if (!phoneCandidate && findPhone(c)) phoneCandidate = findPhone(c);
+            if (!countryCandidate && findCountryCode(c)) countryCandidate = findCountryCode(c);
+            if (!genderCandidate && normalizeGender(c)) genderCandidate = normalizeGender(c);
+          }
+        } else if (cells.length === 1 && isLikelyPersonCell(first)) {
+          nameCandidate = first;
+        } else if (cells.length >= 2) {
+          const possible = cells.find(c => isLikelyPersonCell(c));
+          if (possible) nameCandidate = possible;
+        }
+
+        if (!isLikelyPersonCell(nameCandidate)) continue;
+        const p = { fullName: nameCandidate, idOrPassportNo: idCandidate, phone: phoneCandidate, countryCode: countryCandidate, gender: genderCandidate, confidence: .72, source: `${sheet.fileName} / ${sheet.sheetName}` };
+        out.push(p);
+      }
+      return out;
+    }
+
+    function isLikelyPersonCell(value) {
+      const s = cellText(value);
+      if (!s || isRoomOrNonPassengerValue(s)) return false;
+      if (/@|www\.|https?:\/\//i.test(s)) return false;
+      if (/\d{1,2}[./-]\d{1,2}[./-]\d{2,4}/.test(s)) return false;
+      const cleaned = s.replace(/\([^)]*\)/g, " ").replace(/[^\p{L}\s'’.-]/gu, " ").replace(/\s+/g, " ").trim();
+      const tokens = cleaned.split(/\s+/).filter(Boolean);
+      if (tokens.length < 1 || tokens.length > 7) return false;
+      if (tokens.length === 1 && !isKnownGivenNameToken(tokens[0])) return false;
+      const bad = new Set(["file", "sheet", "page", "hotel", "room", "note", "list", "liste", "otobus", "otobüs", "ucak", "uçak", "balayi", "balayı", "dbl", "twin", "twn", "sng"]);
+      return tokens.every(t => !bad.has(norm(t))) && /\p{L}/u.test(cleaned);
+    }
+
+    function isRoomOrNonPassengerValue(value) {
+      const n = norm(value);
+      if (!n) return true;
+      const bad = new Set(["dbl", "double", "twin", "twn", "sgl", "sng", "single", "trp", "room", "oda", "otel", "hotel", "note", "not", "balayi", "balayı", "otobus", "otobüs", "ucak", "uçak", "transfer", "airport", "taksim", "occidental", "barcelo", "bodrum", "gebze", "dilovasi", "dilovası", "fabrika", "sube", "şube", "none", "null", "undefined", "-"]);
+      if (bad.has(n)) return true;
+      if (/^\d+$/.test(n)) return true;
+      if (/^(db|dbl|tw|twn|twin|sgl|sng|trp)\b/.test(n)) return true;
+      return false;
+    }
+
+    function findHeaderRow(rows) {
+      const aliases = {
+        fullName: ["ad soyad", "adı soyadı", "adi soyadi", "ad soyadı", "isim soyisim", "name surname", "full name", "passenger", "yolcu"],
+        countryCode: ["ülke", "ulke", "uyruk", "country", "nationality", "ulus"],
+        firstName: ["adı", "adi", "ad", "isim", "first name", "given", "given name", "name"],
+        lastName: ["soyadı", "soyadi", "soyad", "surname", "last name", "family", "family name", "soyisim"],
+        idOrPassportNo: ["tc", "tckn", "kimlik", "pasaport", "passport", "id no", "identity", "tc kimlik", "tc kimlik pasaport no"],
+        gender: ["cinsiyet", "gender", "sex", "ms/mr", "mr/ms", "title", "unvan", "ünvan", "hitap"],
+        phone: ["telefon", "phone", "gsm", "mobile", "tel", "telekon"],
+        hesCode: ["hes", "hes kodu", "hescodu"],
+        seatNo: ["koltuk", "seat"]
+      };
+
+      function headerMatches(header, alias) {
+        const h = norm(header);
+        const a = norm(alias);
+        if (!h || !a) return false;
+        if (h === a) return true;
+        const hTokens = h.split(/\s+/).filter(Boolean);
+        const aTokens = a.split(/\s+/).filter(Boolean);
+        if (aTokens.length > 1) return (` ${h} `).includes(` ${a} `);
+        // Short aliases such as "ad" or "adi" must match a whole header token;
+        // otherwise "soyadi" incorrectly becomes both name and surname.
+        if (a.length <= 4) return hTokens.includes(a);
+        return hTokens.includes(a) || (` ${h} `).includes(` ${a} `);
+      }
+
+      function detectHeaderField(cell) {
+        const h = norm(cell);
+        if (!h) return "";
+        // Combined full-name headers must be treated as one fullName column,
+        // not duplicated into both ADI and SOYADI.
+        if (aliases.fullName.some(a => headerMatches(h, a))) return "fullName";
+        if (aliases.idOrPassportNo.some(a => headerMatches(h, a))) return "idOrPassportNo";
+        if (aliases.countryCode.some(a => headerMatches(h, a))) return "countryCode";
+        if (aliases.lastName.some(a => headerMatches(h, a))) return "lastName";
+        if (aliases.firstName.some(a => headerMatches(h, a))) return "firstName";
+        if (aliases.gender.some(a => headerMatches(h, a))) return "gender";
+        if (aliases.phone.some(a => headerMatches(h, a))) return "phone";
+        if (aliases.hesCode.some(a => headerMatches(h, a))) return "hesCode";
+        if (aliases.seatNo.some(a => headerMatches(h, a))) return "seatNo";
+        return "";
+      }
+
+      let best = null;
+      rows.slice(0, 25).forEach((row, rowIndex) => {
+        const map = {};
+        const usedColumns = new Set();
+        let score = 0;
+        row.forEach((cell, idx) => {
+          const field = detectHeaderField(cell);
+          if (!field || usedColumns.has(idx) || map[field] !== undefined) return;
+          map[field] = idx;
+          usedColumns.add(idx);
+          score++;
+        });
+        if (score >= 1 && (map.fullName || map.firstName || map.lastName) && (!best || score > best.score)) best = { rowIndex, map, score };
+      });
+      return best;
+    }
+
+    function extractFromText(text) {
+      const lines = String(text || "")
+        .replace(/\r/g, "\n")
+        .split(/\n+/)
+        .map(x => x.replace(/\s+/g, " ").trim())
+        .filter(Boolean);
+
+      const out = [];
+      for (const line of lines) {
+        if (isNoiseLine(line)) continue;
+        const candidates = splitLikelyRecords(line);
+        for (const c of candidates) {
+          const p = parsePassengerLine(c);
+          if (p && (p.idOrPassportNo || p.phone || (p.firstName && p.lastName))) {
+            out.push(p);
+          }
+        }
+      }
+      return out;
+    }
+
+    function isNoiseLine(line) {
+      const raw = String(line || "").trim();
+      const n = norm(raw);
+      if (n.length < 3) return true;
+      if (/@|www\.|https?:\/\//i.test(raw)) return true;
+      const headers = [
+        "adi soyadi", "tc kimlik", "pasaport", "telefon", "cinsiyet", "uyruk",
+        "yolcu listesi", "isim listesi", "passenger list", "tourism transportation",
+        "turizm tasimaciligi", "turizm", "konforlu", "guvenli", "profesyonel",
+        "sheet", "page", "pasted text", "file", "name s", "names", "name", "head office", "contact person", "otel adi", "egitim tarihi"
+      ];
+      if (headers.some(h => n === h || (n.includes(h) && n.length < 100))) return true;
+      return false;
+    }
+
+    function looksLikeNameOnlyLine(line) {
+      const raw = String(line || "").trim();
+      if (!raw || /\d/.test(raw)) return false;
+      if (/[,:;|]/.test(raw)) return false;
+      const cleaned = raw.replace(/[^\p{L}\s'’.-]/gu, " ").replace(/\s+/g, " ").trim();
+      const tokens = cleaned.split(/\s+/).filter(Boolean);
+      if (tokens.length < 2 || tokens.length > 5) return false;
+      const bad = new Set(["from", "to", "date", "ticket", "seat", "phone", "passport", "kimlik", "telefon", "yolcu", "passenger", "country"]);
+      return tokens.every(t => t.length >= 1 && !bad.has(norm(t)));
+    }
+
+    function splitLikelyRecords(line) {
+      const raw = String(line || "").replace(/\s+/g, " ").trim();
+      if (!raw) return [];
+      if (raw.includes("\t")) return [raw];
+
+      // Some PDF extractors flatten a whole table into one long line such as:
+      // 1 HATEM MAISARA A123 2 SHERIF AZAB A456 ...
+      // Split only at likely passenger row numbers, not at phone/passport numbers.
+      const starts = [];
+      const re = /(?:^|\s)(\d{1,3})[\s).:;-]+(?=[A-ZÇĞİÖŞÜ][\p{L}'’.-]+(?:\s+|$))/gu;
+      let m;
+      while ((m = re.exec(raw)) !== null) {
+        const n = Number(m[1]);
+        const idx = m.index + m[0].search(/\d/);
+        if (n > 0 && n < 500) starts.push(idx);
+      }
+      if (starts.length >= 2) {
+        return starts.map((start, i) => raw.slice(start, starts[i + 1] || raw.length).trim()).filter(Boolean);
+      }
+      return [raw];
+    }
+
+    function parseNumberedPassengerRecord(line) {
+      const m = String(line || "").trim().match(/^(?:no\.?\s*)?(\d{1,4})[\s).:;-]+(.+)$/iu);
+      if (!m) return null;
+      let rest = m[2].replace(/\s+/g, " ").trim();
+      if (!rest || isNoiseLine(rest)) return null;
+      // This fast path is only for simple numbered PDF/table rows with columns like:
+      // SIRA ADI SOYADI PASAPORT NO. If the row also contains phone, TCKN,
+      // country, or explicit gender, let the general parser handle those fields.
+      if (findTCKN(rest) || findPhone(rest) || findGender(rest)) return null;
+
+      const tokens = rest.split(/\s+/).filter(Boolean);
+      if (tokens.length < 2) return null;
+
+      let passport = "";
+      let nameTokens = [...tokens];
+      while (nameTokens.length > 1 && isRoomOrNonPassengerValue(nameTokens[nameTokens.length - 1])) {
+        nameTokens.pop();
+      }
+      const last = nameTokens[nameTokens.length - 1];
+      const lastNorm = norm(last);
+      const lastLooksLikePassport = /^[A-Z]{1,3}[0-9]{4,12}$/i.test(last) || (/^[A-Z0-9]{5,20}$/i.test(last) && /\d/.test(last) && !/^\d+$/.test(last));
+      const veryShortPassportFromPdfTable = nameTokens.length >= 3 && /^[A-Z]{2,3}$/.test(last) && !isRoomOrNonPassengerValue(last) && !EAST_ASIAN_FAMILY_NAME_HINTS.has(lastNorm) && !MALE_NAME_HINTS.has(lastNorm) && !FEMALE_NAME_HINTS.has(lastNorm);
+      if (lastLooksLikePassport || veryShortPassportFromPdfTable) {
+        passport = lastLooksLikePassport ? last : "";
+        nameTokens = nameTokens.slice(0, -1);
+      }
+
+      if (nameTokens.length < 2) return null;
+      const parts = splitName(nameTokens.join(" "));
+      return {
+        firstName: parts.firstName,
+        lastName: parts.lastName,
+        idOrPassportNo: passport || "1",
+        confidence: .86,
+        notes: passport ? "Numbered PDF/list row parsed." : "Numbered PDF/list row parsed; missing or weak passport filled as 1."
+      };
+    }
+
+    function parsePassengerLine(line) {
+      const originalLine = String(line || "");
+      const numberedRecord = parseNumberedPassengerRecord(originalLine);
+      if (numberedRecord) return numberedRecord;
+      const nameOnlyLine = looksLikeNameOnlyLine(originalLine);
+      let s = ` ${originalLine} `;
+      const p = { confidence: .55, notes: "" };
+
+      const hes = s.match(/\b[A-Z0-9]{8,12}\b/i);
+      if (hes && /[A-Z]/i.test(hes[0]) && /\d/.test(hes[0]) && !looksLikePassport(hes[0])) {
+        p.hesCode = hes[0];
+      }
+
+      const tckn = findTCKN(s);
+      if (tckn) {
+        p.idOrPassportNo = tckn.value;
+        s = s.replace(tckn.raw, " ");
+      } else {
+        const passport = findPassport(s);
+        if (passport) {
+          p.idOrPassportNo = passport;
+          s = s.replace(passport, " ");
+        }
+      }
+
+      const phone = findPhone(s);
+      if (phone) {
+        p.phone = phone;
+        s = s.replace(phone, " ");
+      }
+
+      const gender = findGender(s);
+      if (gender) {
+        p.gender = gender;
+        s = s.replace(/\b(erkek|male|bay|mr|kadın|kadin|female|bayan|mrs|ms|miss|mme|madame)\b/ig, " ").replace(/(^|\s)[EK](?=\s|$)/ig, " ");
+      }
+
+      const code = nameOnlyLine ? "" : findCountryCode(s);
+      if (code) {
+        p.countryCode = code;
+        s = removeCountryWords(s);
+      }
+
+      s = s
+        .replace(/\([^)]*\)/g, " ")
+        .replace(/\b(row|sıra|sira|no|pnr|seat|koltuk|tel|telefon|gsm|uyruk|ülke|ulke)\b/ig, " ")
+        .replace(/[0-9()+\-./]/g, " ")
+        .replace(/[;:,|]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const name = splitName(s);
+      p.firstName = name.firstName;
+      p.lastName = name.lastName;
+      if (p.firstName && p.lastName) {
+        p.confidence = Math.max(p.confidence, (p.idOrPassportNo || p.phone) ? .72 : .68);
+      }
+      if (nameOnlyLine && p.firstName && p.lastName) {
+        p.confidence = Math.max(p.confidence, .68);
+        p.notes = p.notes || "Raw name-only line; missing ID/passport will be filled as 1.";
+      }
+      return p;
+    }
+
+    function findTCKN(s) {
+      const text = String(s || "");
+      const matches = text.match(/(?:^|\D)((?:[1-9][\s.-]*)?(?:\d[\s.-]*){10})(?!\d)/g) || [];
+      for (const rawMatch of matches) {
+        const raw = rawMatch.trim();
+        const digits = raw.replace(/\D/g, "");
+        if (/^[1-9]\d{10}$/.test(digits)) {
+          return { raw, value: digits };
+        }
+      }
+      return null;
+    }
+
+    function looksLikePassport(s) {
+      return /^[A-Z]{1,3}[0-9]{4,9}$/i.test(String(s).trim()) || /^[A-Z0-9]{6,12}$/i.test(String(s).trim());
+    }
+
+    function findPassport(s) {
+      const matches = String(s).match(/\b[A-Z]{1,3}[0-9]{4,9}\b/ig) || [];
+      return matches.find(m => !/^\d+$/.test(m) && !/^HES/i.test(m)) || "";
+    }
+
+    function findPhone(s) {
+      const m = String(s).match(/(?:\+?\d[\s().-]*){9,16}/g) || [];
+      const phones = m.map(x => x.trim()).filter(x => {
+        const d = x.replace(/\D/g, "");
+        return d.length >= 10 && d.length <= 14 && !/^[1-9]\d{10}$/.test(d);
+      });
+      return phones[0] || "";
+    }
+
+    function findGender(s) {
+      const n = norm(s);
+      if (/\b(erkek|male|bay|mr|m|e)\b/.test(n)) return "E";
+      if (/\b(kadin|female|bayan|mrs|ms|f|k)\b/.test(n)) return "K";
+      return "";
+    }
+
+    function findCountryCode(s) {
+      const parts = norm(s).split(/\s+/).filter(Boolean);
+      for (const part of parts) {
+        const up = part.toUpperCase();
+        if (countryCodes.has(up)) return up;
+      }
+      const n = norm(s);
+      const sorted = [...countryNameToCode.keys()].sort((a, b) => b.length - a.length);
+      for (const key of sorted) {
+        if (key.length >= 2 && (` ${n} `).includes(` ${key} `)) return countryNameToCode.get(key);
+      }
+      return "";
+    }
+
+    function removeCountryWords(s) {
+      let out = String(s);
+      for (const c of COUNTRY_ROWS) {
+        if (c.name.length > 3) {
+          out = out.replace(new RegExp(escapeRegExp(c.name), "ig"), " ");
+        }
+        out = out.replace(new RegExp(`\\b${escapeRegExp(c.code)}\\b`, "ig"), " ");
+      }
+      return out;
+    }
+
+    function escapeRegExp(s) {
+      return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function shouldUseEasternSurnameFirst(tokens) {
+      if (!miniAIEnabled() || !tokens || tokens.length < 2 || tokens.length > 5) return false;
+      const normalized = tokens.map(norm).filter(Boolean);
+      if (!normalized.length || !EAST_ASIAN_FAMILY_NAME_HINTS.has(normalized[0])) return false;
+      if (/[çğıöşü]/i.test(tokens.join(" "))) return false;
+      const rawJoined = tokens.join(" ");
+      const allCapsRomanized = tokens.every(t => /^[A-Z'’.-]+$/.test(t));
+      const chineseGivenScore = normalized.slice(1).reduce((score, t) => {
+        if (CHINESE_MALE_GIVEN_HINTS.includes(t) || CHINESE_FEMALE_GIVEN_HINTS.includes(t)) score += 1.4;
+        if (/(jing|jun|hong|qiu|cheng|wen|bao|ren|xiao|ying|fang|mei|li|si|qi|shirley|regina|karsia|ngasheek)$/.test(t)) score += 0.55;
+        return score;
+      }, 0);
+      const surnameStrength = ["yip","chin","chan","cheung","chow","lau","leung","wong","ng","cai","cao","zhang","wang","liu","chen","sun","pang","che","chang","yu"].includes(normalized[0]) ? 1.2 : 0.6;
+      return allCapsRomanized || (surnameStrength + chineseGivenScore >= 1.4);
+    }
+
+    function isKnownGivenNameToken(token) {
+      const n = norm(token);
+      if (!n) return false;
+      return MALE_NAME_HINTS.has(n) || FEMALE_NAME_HINTS.has(n);
+    }
+
+    function particleSurnameStart(tokens) {
+      const n = tokens.map(norm);
+      if (tokens.length >= 2) {
+        const two = n.slice(-2);
+        if (["van", "von", "te", "ter", "de", "del", "da", "do", "dos", "das"].includes(two[0])) return tokens.length - 2;
+      }
+      if (tokens.length >= 3) {
+        const three = n.slice(-3).join(" ");
+        if (["de la", "de los", "de las", "van der", "van den", "von der"].includes(three)) return tokens.length - 3;
+      }
+      return -1;
+    }
+
+    function trainedSurnameStart(tokens) {
+      if (!miniAIEnabled() || tokens.length < 3) return -1;
+      const n = tokens.map(norm);
+      const firstKnown = n.map(isKnownGivenNameToken);
+      let givenCount = 0;
+      for (let i = 0; i < tokens.length - 1 && i < 3; i++) {
+        if (firstKnown[i]) givenCount++;
+        else break;
+      }
+      // Latin/French/Portuguese lists often write one or two given names followed by compound surnames.
+      if (tokens.length >= 4 && givenCount >= 1 && givenCount <= tokens.length - 2) return givenCount;
+      if (tokens.length === 3 && givenCount === 1 && !isKnownGivenNameToken(tokens[2])) return 1;
+      // Initial-heavy Dutch lists: N.L.G. Van Eerten, M. te Boekhorst.
+      const particleIdx = particleSurnameStart(tokens);
+      if (particleIdx > 0) return particleIdx;
+      return -1;
+    }
+
+    function splitName(s) {
+      let text = String(s || "")
+        .replace(/\([^)]*\)/g, " ")
+        .replace(/\be\s*[\/\\]?\s*v\b/ig, " ")
+        .replace(/[^\p{L}\s'’.-]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const blacklist = new Set(["mr", "mrs", "ms", "bay", "bayan", "sayin", "sayın", "yolcu", "passenger"]);
+      const tokens = text.split(/\s+/).filter(t => t && !blacklist.has(norm(t)));
+      if (tokens.length === 0) return { firstName: "", lastName: "" };
+      if (tokens.length === 1) return { firstName: titleCase(tokens[0]), lastName: "" };
+
+      // East Asian agency lists are often written as SURNAME GIVEN-NAME, for example
+      // YU WENJING, CAI SONGJUN, CHIN SHIRLEY NGASHEEK. In that case the first token
+      // must go to SOYADI and the remaining tokens to ADI.
+      if (shouldUseEasternSurnameFirst(tokens)) {
+        return { firstName: titleCase(tokens.slice(1).join(" ")), lastName: titleCase(tokens[0]) };
+      }
+
+      const particleIdx = particleSurnameStart(tokens);
+      if (particleIdx > 0) {
+        return { firstName: titleCase(tokens.slice(0, particleIdx).join(" ")), lastName: titleCase(tokens.slice(particleIdx).join(" ")) };
+      }
+
+      const trainedIdx = trainedSurnameStart(tokens);
+      if (trainedIdx > 0) {
+        return { firstName: titleCase(tokens.slice(0, trainedIdx).join(" ")), lastName: titleCase(tokens.slice(trainedIdx).join(" ")) };
+      }
+
+      if (miniAIEnabled()) {
+        const scored = tokens.map((tok, idx) => {
+          const n = norm(tok);
+          let firstScore = 0;
+          let lastScore = 0;
+          if (MALE_NAME_HINTS.has(n) || FEMALE_NAME_HINTS.has(n)) firstScore += 2.5;
+          if (SURNAME_HINTS.has(n)) lastScore += 2.3;
+          if (idx === tokens.length - 1) lastScore += 1.35;
+          if (idx === 0) firstScore += 1.0;
+          if (/^[A-ZÇĞİÖŞÜ]{2,}$/.test(tok) && tok.length > 2 && idx === tokens.length - 1) lastScore += 0.7;
+          if (/oglu$|oğlu$|ov$|ova$|ev$|eva$|son$|ski$|ska$|vili$|dze$|zade$/i.test(n)) lastScore += 0.8;
+          return { tok, firstScore, lastScore };
+        });
+
+        const best = scored.reduce((best, item, idx) => {
+          const score = item.lastScore - item.firstScore;
+          return score > best.score ? { idx, score } : best;
+        }, { idx: tokens.length - 1, score: -Infinity });
+
+        // Default rule requested for one-column lists: final token is surname.
+        // Only move a non-final token to surname when the evidence is very strong.
+        const finalScore = scored[tokens.length - 1].lastScore - scored[tokens.length - 1].firstScore;
+        const bestLastIdx = (best.idx > 0 && best.idx !== tokens.length - 1 && best.score >= finalScore + 2.2) ? best.idx : tokens.length - 1;
+        if (bestLastIdx > 0) {
+          const firstName = tokens.filter((_, idx) => idx !== bestLastIdx).join(" ");
+          const lastName = tokens[bestLastIdx];
+          return { firstName: titleCase(firstName), lastName: titleCase(lastName) };
+        }
+      }
+
+      const lastName = tokens[tokens.length - 1];
+      const firstName = tokens.slice(0, -1).join(" ");
+      return { firstName: titleCase(firstName), lastName: titleCase(lastName) };
+    }
+
+    function titleCase(s) {
+      return String(s || "")
+        .split(/\s+/)
+        .map(raw => {
+          if (!raw) return "";
+          // Turkish casing turns ASCII I into dotless ı, which corrupts romanized foreign names like KIM.
+          // Use Turkish casing only when the token already contains Turkish-specific letters.
+          const locale = /[ÇĞİÖŞÜçğıöşü]/.test(raw) ? "tr-TR" : "en-US";
+          const w = raw.toLocaleLowerCase(locale);
+          return w[0].toLocaleUpperCase(locale) + w.slice(1);
+        })
+        .join(" ")
+        .trim();
+    }
+
+    function normalizePassenger(input) {
+      const p = { ...input };
+      const rawId = String(p.idOrPassportNo || p.tcKimlikPasaportNo || p.identity || "").trim();
+      let firstName = cleanPersonName(p.firstName || p.adi || p.adı || p.name || "");
+      let lastName = cleanPersonName(p.lastName || p.soyadi || p.soyadı || p.surname || "");
+
+      if (miniAIEnabled()) {
+        const fullNameCandidate = cleanPersonName(p.fullName || p.full_name || p.yolcu || "");
+        if (((!firstName || !lastName) || (firstName && lastName && norm(firstName) === norm(lastName))) && fullNameCandidate) {
+          const parts = splitName(fullNameCandidate);
+          firstName = parts.firstName;
+          lastName = parts.lastName;
+        }
+      }
+
+      // Safety rule for agency files with one column such as "Adı Soyadı":
+      // if name and surname are identical full names, split once and use the final token as surname.
+      if (firstName && lastName && norm(firstName) === norm(lastName) && firstName.split(/\s+/).length > 1) {
+        const parts = splitName(firstName);
+        firstName = parts.firstName;
+        lastName = parts.lastName;
+      }
+      if (firstName && !lastName && firstName.split(/\s+/).length > 1) {
+        const parts = splitName(firstName);
+        firstName = parts.firstName;
+        lastName = parts.lastName;
+      }
+
+      let country = normalizeCountry(p.countryCode || p.country || p.uyrukUlke || p.ülke || p.ulke, rawId);
+      let id = normalizeId(rawId);
+      const phone = normalizePhone(p.phone || p.telefon || p.telefonNo || "");
+      let gender = normalizeGender(p.gender || p.cinsiyet || "");
+
+      const warnings = [];
+
+      if (!id) {
+        id = "1";
+      }
+
+      if (!gender) {
+        gender = guessGenderFromName(firstName, lastName, true) || "E";
+      }
+
+      if (!country) {
+        country = guessCountryFromName(firstName, lastName);
+      }
+      if (!country && els.defaultTR.checked) {
+        country = "TR";
+      }
+      if (!country) warnings.push("Ülke kodu eksik");
+
+      if (country && !countryCodes.has(country)) warnings.push(`Geçersiz ülke kodu: ${country}`);
+      if (!firstName) warnings.push("Ad eksik");
+      if (!lastName) warnings.push("Soyad eksik");
+      if (id !== "1") {
+        if (/^\d{11}$/.test(id) && !validateTCKN(id)) warnings.push("TC Kimlik checksum hatalı");
+        else if (!/^\d{11}$/.test(id) && !/^[A-Z0-9]{5,20}$/i.test(id)) warnings.push("Pasaport biçimi kontrol edilmeli");
+      }
+      if (gender && !["E", "K"].includes(gender)) warnings.push("Cinsiyet E/K olmalı");
+
+      let conf = Number(p.confidence);
+      if (!Number.isFinite(conf)) conf = warnings.length ? .58 : .82;
+
+      return {
+        countryCode: country || "",
+        firstName,
+        lastName,
+        idOrPassportNo: id,
+        gender,
+        phone,
+        hesCode: String(p.hesCode || p.hesKodu || "").trim().toUpperCase(),
+        seatNo: String(p.seatNo || p.koltukNo || "").trim(),
+        confidence: Math.max(0, Math.min(1, conf)),
+        notes: String(p.notes || "").trim(),
+        _smart: !!p._smart,
+        warnings
+      };
+    }
+
+    function normalizeCountry(value, id) {
+      let v = String(value || "").trim();
+      if (!v && /^\d{11}$/.test(normalizeId(id))) return "TR";
+      if (!v) return "";
+      v = v.replace(/[^A-Za-zÇĞİÖŞÜçğıöşü .-]/g, " ").trim();
+      const up = v.toUpperCase();
+      if (countryCodes.has(up)) return up;
+      return countryNameToCode.get(norm(v)) || "";
+    }
+
+    function normalizeId(value) {
+      return String(value || "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "")
+        .trim();
+    }
+
+    function normalizeGender(value) {
+      const n = norm(value);
+      if (!n) return "";
+      if (["e", "erkek", "male", "m", "bay", "mr", "man", "men"].includes(n)) return "E";
+      if (["k", "kadin", "kadın", "female", "f", "bayan", "mrs", "ms", "miss", "mme", "madame", "woman", "women"].includes(n)) return "K";
+      return "";
+    }
+
+    function normalizePhone(value) {
+      let s = String(value || "").trim();
+      if (!s) return "";
+      let digits = s.replace(/\D/g, "");
+      if (!digits) return "";
+      if (digits.startsWith("0090")) digits = digits.slice(2);
+      if (digits.startsWith("90") && digits.length === 12) digits = "0" + digits.slice(2);
+      if (digits.length === 10 && digits.startsWith("5")) digits = "0" + digits;
+      if (digits.length > 20) digits = digits.slice(0, 20);
+      return digits;
+    }
+
+    function cleanPersonName(value) {
+      return titleCase(String(value || "").replace(/[0-9]/g, " ").replace(/\s+/g, " ").trim());
+    }
+
+    function validateTCKN(tckn) {
+      const s = String(tckn);
+      if (!/^[1-9]\d{10}$/.test(s)) return false;
+      const d = s.split("").map(Number);
+      const odd = d[0] + d[2] + d[4] + d[6] + d[8];
+      const even = d[1] + d[3] + d[5] + d[7];
+      const digit10 = ((odd * 7) - even) % 10;
+      const digit11 = d.slice(0, 10).reduce((a, b) => a + b, 0) % 10;
+      return d[9] === digit10 && d[10] === digit11;
+    }
+
+    function dedupePassengers(rows) {
+      const seen = new Set();
+      const seenIds = new Set();
+      const out = [];
+
+      for (const p of rows) {
+        const idKey = normalizeId(p.idOrPassportNo || "");
+
+        // Real passport/TCKN values are the strongest duplicate signal.
+        // Do not use the fallback value "1" for ID-based deduplication,
+        // because many different passengers may legitimately be missing an ID.
+        if (idKey && idKey !== "1") {
+          if (seenIds.has(idKey)) continue;
+          seenIds.add(idKey);
+          out.push(p);
+          continue;
+        }
+
+        const key = `${norm(p.firstName)}|${norm(p.lastName)}|${normalizePhone(p.phone)}|${p.countryCode || ""}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(p);
+      }
+
+      return out;
+    }
+
+    function renderTable() {
+      if (!state.passengers.length) {
+        els.tableHolder.innerHTML = `
+          <div class="empty">
+            <strong>${t("emptyTitle")}</strong>
+            <span>${t("emptyDesc")}</span>
+          </div>`;
+        updateMetrics();
+        return;
+      }
+
+      const rows = state.passengers.map((p, i) => {
+        const confClass = p.warnings?.length ? "warn" : p.confidence >= .75 ? "ok" : "warn";
+        const warnHtml = p.warnings?.length
+          ? `<ul class="warning-list">${p.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("")}</ul>`
+          : `<span class="pill ok">${t("ok")}</span>`;
+
+        return `
+          <tr data-row="${i}">
+            <td>${i + 1}</td>
+            <td><input class="narrow" data-field="countryCode" value="${escapeHtml(p.countryCode)}" list="countryCodes" maxlength="10"></td>
+            <td><input class="wide" data-field="firstName" value="${escapeHtml(p.firstName)}"></td>
+            <td><input class="wide" data-field="lastName" value="${escapeHtml(p.lastName)}"></td>
+            <td><input class="wide" data-field="idOrPassportNo" value="${escapeHtml(p.idOrPassportNo)}"></td>
+            <td>
+              <select class="narrow" data-field="gender">
+                <option value="E" ${p.gender === "E" ? "selected" : ""}>E</option>
+                <option value="K" ${p.gender === "K" ? "selected" : ""}>K</option>
+              </select>
+            </td>
+            <td><input class="wide" data-field="phone" value="${escapeHtml(p.phone)}"></td>
+            <td><input class="wide" data-field="hesCode" value="${escapeHtml(p.hesCode)}"></td>
+            <td><span class="pill ${confClass}">${Math.round((p.confidence || 0) * 100)}%</span></td>
+            <td>${warnHtml}</td>
+            <td><button class="small danger" data-delete="${i}">${t("delete")}</button></td>
+          </tr>
+        `;
+      }).join("");
+
+      els.tableHolder.innerHTML = `
+        <datalist id="countryCodes">
+          ${COUNTRY_ROWS.map(c => `<option value="${c.code}">${escapeHtml(c.name)}</option>`).join("")}
+        </datalist>
+        <table>
+          <colgroup>
+            <col class="col-no">
+            <col class="col-country">
+            <col class="col-name">
+            <col class="col-surname">
+            <col class="col-id">
+            <col class="col-gender">
+            <col class="col-phone">
+            <col class="col-hes">
+            <col class="col-confidence">
+            <col class="col-review">
+            <col class="col-delete">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>${t("thCountry")}</th>
+              <th>${t("thName")}</th>
+              <th>${t("thSurname")}</th>
+              <th>${t("thId")}</th>
+              <th>${t("thGender")}</th>
+              <th>${t("thPhone")}</th>
+              <th>${t("thHes")}</th>
+              <th>${t("thConfidence")}</th>
+              <th>${t("thReview")}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      els.tableHolder.querySelectorAll("input, select").forEach(input => {
+        input.addEventListener("input", onCellEdit);
+        input.addEventListener("change", onCellEdit);
+      });
+
+      els.tableHolder.querySelectorAll("button[data-delete]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.passengers.splice(Number(btn.dataset.delete), 1);
+          renderTable();
+        });
+      });
+
+      updateMetrics();
+    }
+
+    function onCellEdit(e) {
+      const tr = e.target.closest("tr");
+      const idx = Number(tr.dataset.row);
+      const field = e.target.dataset.field;
+      state.passengers[idx][field] = e.target.value;
+      const normalized = normalizePassenger(state.passengers[idx]);
+      state.passengers[idx] = { ...state.passengers[idx], ...normalized };
+      updateMetrics();
+    }
+
+    function tableRowsForExport() {
+      return state.passengers.map(normalizePassenger).map(p => ([
+        p.countryCode,
+        p.firstName,
+        p.lastName,
+        p.idOrPassportNo,
+        p.gender,
+        p.phone,
+        p.hesCode
+      ]));
+    }
+
+    function exportXlsx(emptyTemplate) {
+      if (!window.XLSX) {
+        toast(t("sheetJsError"));
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+      wb.Props = {
+        Title: "UETDS Passenger Template",
+        Subject: "excelyolcusablon compatible passenger list",
+        Author: "UETDS Passenger List Preparer",
+        CreatedDate: new Date()
+      };
+
+      const yolcuRows = emptyTemplate ? [TEMPLATE_HEADERS] : [TEMPLATE_HEADERS, ...tableRowsForExport()];
+      const wsY = XLSX.utils.aoa_to_sheet(yolcuRows);
+      wsY["!cols"] = [
+        { wch: 10 }, { wch: 22 }, { wch: 22 }, { wch: 26 }, { wch: 10 }, { wch: 18 }, { wch: 18 }
+      ];
+      XLSX.utils.book_append_sheet(wb, wsY, "YOLCULAR");
+
+      const wsG = XLSX.utils.aoa_to_sheet(GENDER_ROWS);
+      wsG["!cols"] = [{ wch: 8 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, wsG, "CİNSİYET");
+
+      const wsC = XLSX.utils.aoa_to_sheet([["ULUSLARARASI_KOD", "ULKE_ADI"], ...COUNTRY_ROWS.map(c => [c.code, c.name])]);
+      wsC["!cols"] = [{ wch: 20 }, { wch: 36 }];
+      XLSX.utils.book_append_sheet(wb, wsC, "ÜLKE KODLARI");
+
+      const filename = emptyTemplate ? "excelyolcusablon_empty.xlsx" : `uetds_yolcular_${dateStamp()}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      toast(t("downloaded", { filename }));
+    }
+
+    function exportCsv() {
+      const aoa = [TEMPLATE_HEADERS, ...tableRowsForExport()];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      downloadBlob(csv, `uetds_yolcular_${dateStamp()}.csv`, "text/csv;charset=utf-8");
+      toast(t("csvDownloaded"));
+    }
+
+    function downloadBlob(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function dateStamp() {
+      return new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "");
+    }
+
+    function updateMetrics() {
+      const warnings = state.passengers.reduce((sum, p) => sum + (p.warnings && p.warnings.length ? 1 : 0), 0);
+      if (els.mRows) els.mRows.textContent = state.passengers.length;
+      if (els.mWarnings) els.mWarnings.textContent = warnings;
+      if (els.mFiles) els.mFiles.textContent = state.files.length;
+    }
+
+    function loadDemo() {
+      els.sourceText.value = [
+        "YOLCU LİSTESİ - ANKARA / İSTANBUL",
+        "1 Ali Veli 10000000146 TR 05051234569 Erkek",
+        "2 Abelard Meyer L123NK45 Almanya +49 5049876543 E",
+        "3 Victoria Thalberg AJ9876543 DE 08765432100 Kadın",
+        "4 Illya Ishchenko FL1234567 Ukrayna 03801234569 K"
+      ].join("\n");
+      log(t("demoLoadedLog"), true);
+      toast(t("demoLoadedToast"));
+    }
+
+    function clearAll() {
+      state.rawTexts = [];
+      state.workbookSheets = [];
+      state.images = [];
+      state.passengers = [];
+      state.files = [];
+      els.sourceText.value = "";
+      els.fileInput.value = "";
+      els.fileList.innerHTML = "";
+      renderTable();
+      log(t("clearedLog"), true);
+      toast(t("clearedToast"));
+    }
+
+    init();
+  </script>
+</body>
+</html>
