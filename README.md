@@ -27,3 +27,11 @@ GitHub Pages package.
 ## Contact
 
 Satılmış Furkan Kahraman — s.furkankahraman@gmail.com
+
+
+## Google Search Console verification
+
+This package includes `google0b08d1ea100de13b.html` in the website root. After publishing to GitHub Pages, verify the property in Google Search Console using the HTML file method. The file must be reachable at:
+
+`https://YOUR-DOMAIN/google0b08d1ea100de13b.html`
+
