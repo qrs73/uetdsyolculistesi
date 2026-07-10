@@ -186,50 +186,6 @@
       background: #fbfcfe;
     }
 
-
-
-    .ad-wrap {
-      padding-top: 16px;
-      padding-bottom: 0;
-    }
-
-    .ad-banner {
-      min-height: 92px;
-      border: 1px dashed var(--border);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, .72);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      text-align: center;
-      padding: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .ad-banner .ad-label {
-      display: inline-flex;
-      align-items: center;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-
-    .ad-banner b {
-      font-size: 18px;
-      letter-spacing: -.02em;
-    }
-
-    .ad-banner span:last-child {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
     .bottom-info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -460,6 +416,17 @@
       font-size: 12.5px;
     }
 
+    .source-language-box {
+      margin: 0 0 14px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fbfcfe;
+    }
+
+    body[data-theme="dark"] .source-language-box {
+      background: #0b1220;
+    }
 
 
     .head-actions {
@@ -861,8 +828,7 @@
 
     body[data-theme="dark"] .rule-card,
     body[data-theme="dark"] .workflow-step,
-    body[data-theme="dark"] .template-line,
-    body[data-theme="dark"] .ad-banner {
+    body[data-theme="dark"] .template-line {
       background: #0b1220;
       color: var(--text);
     }
@@ -915,14 +881,7 @@
         </div>
       </div>
     </div>
-    <div class="wrap ad-wrap">
-      <div class="ad-banner" role="complementary" aria-label="Advertisement">
-        <span class="ad-label" data-i18n="adLabel">Ad</span>
-        <b data-i18n="adTitle">Advertisement area</b>
-        <span data-i18n="adSubtitle">Place sponsor banner or company announcement here.</span>
-      </div>
-    </div>
-  </header>
+</header>
 
   <main class="wrap">
     <section class="panel">
@@ -959,6 +918,24 @@
           <div class="num">3</div>
           <div>
             <label data-i18n="extractionLabel">Extraction mode</label>
+
+            <div class="source-language-box">
+              <label for="sourceLangSelect" data-i18n="sourceLangLabel">AI/source language</label>
+              <select id="sourceLangSelect" aria-label="AI/source language">
+                <option value="auto" data-i18n="sourceLangAuto">Auto-detect</option>
+                <option value="es">Spanish</option>
+                <option value="pt">Portuguese</option>
+                <option value="zh">Chinese</option>
+                <option value="ko">Korean</option>
+                <option value="ar">Arabic</option>
+                <option value="en">English</option>
+                <option value="tr">Turkish</option>
+                <option value="ru">Russian</option>
+                <option value="it">Italian</option>
+                <option value="fr">French</option>
+              </select>
+              <div class="hint" data-i18n="sourceLangHint">Auto-detect supports Spanish, Portuguese, Chinese, Korean, Arabic, English, Turkish, Russian, Italian and French passenger lists.</div>
+            </div>
 
             <div class="check-row">
               <input id="useSmartAI" type="checkbox" checked />
@@ -1103,9 +1080,6 @@
         themeLabel: "Theme",
         themeLight: "Light",
         themeDark: "Dark",
-        adLabel: "Ad",
-        adTitle: "Advertisement area",
-        adSubtitle: "Place sponsor banner or company announcement here.",
         appTitle: "UETDS Passenger List Preparer",
         subtitle: "Prepare clean <b>excelyolcusablon</b>-compatible passenger Excel files from PDF, Excel, CSV, TXT or pasted agency lists.",
         badgeInput: "✓ PDF and Excel input",
@@ -1146,6 +1120,10 @@
         sourcePlaceholder: "Example:\n1  Ali Veli  12345678912  TR  05321234567  E\n2  Victoria Meyer  AF123456  DE  +49 171 555 10 10  K",
         pasteHint: "Useful for WhatsApp, email, copied PDF table text, or scanned OCR output.",
         extractionLabel: "Extraction mode",
+        sourceLangLabel: "AI/source language",
+        sourceLangAuto: "Auto-detect",
+        sourceLangHint: "Auto-detect supports Spanish, Portuguese, Chinese, Korean, Arabic, English, Turkish, Russian, Italian and French passenger lists.",
+        sourceLangDetected: "Source language: {language}",
         smartAiTitle: "Built-in Smart AI (recommended)",
         smartAiDesc: "Uses the app's most capable embedded LLM (with vision) to read messy text, PDF, Excel and images — including handwritten lists — and infer name, surname, gender and country with high accuracy. Smart AI rows skip the confidence filter so nothing is silently dropped. No API key needed.",
         paidAiTitle: "Optional: use your own OpenAI-compatible API",
@@ -1202,9 +1180,6 @@
         themeLabel: "Tema",
         themeLight: "Açık",
         themeDark: "Koyu",
-        adLabel: "Reklam",
-        adTitle: "Reklam alanı",
-        adSubtitle: "Sponsor bannerı veya firma duyurusu için ayrılmış üst alan.",
         appTitle: "UETDS Yolcu Listesi Hazırlayıcı",
         subtitle: "PDF, Excel, CSV, TXT veya yapıştırılmış acente listelerinden temiz <b>excelyolcusablon</b> uyumlu yolcu Excel dosyası hazırlayın.",
         badgeInput: "✓ PDF ve Excel girişi",
@@ -1245,6 +1220,10 @@
         sourcePlaceholder: "Örnek:\n1  Ali Veli  12345678912  TR  05321234567  E\n2  Victoria Meyer  AF123456  DE  +49 171 555 10 10  K",
         pasteHint: "WhatsApp, e-posta, kopyalanmış PDF tablo metni veya OCR çıktısı için kullanışlıdır.",
         extractionLabel: "Çıkarma modu",
+        sourceLangLabel: "AI/kaynak dili",
+        sourceLangAuto: "Otomatik algıla",
+        sourceLangHint: "Otomatik algılama; İspanyolca, Portekizce, Çince, Korece, Arapça, İngilizce, Türkçe, Rusça, İtalyanca ve Fransızca yolcu listelerini destekler.",
+        sourceLangDetected: "Kaynak dili: {language}",
         smartAiTitle: "Yerleşik Akıllı AI (önerilen)",
         smartAiDesc: "Uygulamanın en güçlü gömülü LLM'ini (görüntü okuma dahil) kullanarak karışık metin, PDF, Excel ve görselleri — el yazısı listeler dahil — okur; ad, soyad, cinsiyet ve ülkeyi yüksek doğrulukla çıkarır. Akıllı AI satırları güven filtresini atlar, böylece hiçbir satır sessizce silinmez. API key gerekmez.",
         paidAiTitle: "Opsiyonel: kendi OpenAI-uyumlu API'nizi kullanın",
@@ -1300,6 +1279,7 @@
 
     let appLang = localStorage.getItem("uetds_lang") || "tr";
     let appTheme = localStorage.getItem("uetds_theme") || "light";
+    let appSourceLang = localStorage.getItem("uetds_source_lang") || "auto";
 
     const COUNTRY_ROWS = [{"code": "TR", "name": "Türkiye"}, {"code": "AM", "name": "Abd Minor Outlying Adaları"}, {"code": "VI", "name": "Abd Virjin Adaları"}, {"code": "AF", "name": "Afganistan"}, {"code": "DE", "name": "Almanya"}, {"code": "US", "name": "Amerika Birleşik Devletleri"}, {"code": "AS", "name": "Amerika Samoası"}, {"code": "AS", "name": "Amerikan Okyanusyası"}, {"code": "AD", "name": "Andorra"}, {"code": "AO", "name": "Angola"}, {"code": "AI", "name": "Anguılla"}, {"code": "AQ", "name": "Antartika"}, {"code": "AG", "name": "Antıgua Ve Bermuda"}, {"code": "AR", "name": "Arjantin"}, {"code": "AL", "name": "Arnavutluk"}, {"code": "AW", "name": "Aruba"}, {"code": "AU", "name": "Avustralya"}, {"code": "AO", "name": "Avustralya Okyanusu"}, {"code": "AU", "name": "Avusturya"}, {"code": "AZ", "name": "Azerbaycan - Nahçıvan"}, {"code": "BS", "name": "Bahamalar"}, {"code": "BH", "name": "Bahreyn"}, {"code": "BD", "name": "Bangladeş"}, {"code": "BB", "name": "Barbados"}, {"code": "BE", "name": "Belçika"}, {"code": "BZ", "name": "Belize"}, {"code": "BJ", "name": "Benin"}, {"code": "BM", "name": "Bermuda"}, {"code": "BY", "name": "Beyaz Rusya"}, {"code": "BT", "name": "Bhutan"}, {"code": "BILINMIYOR", "name": "BILINMIYOR"}, {"code": "B", "name": "Bilinemeyen Ülke Ve Topraklar"}, {"code": "AE", "name": "Birleşik Arap Emirlikleri"}, {"code": "BO", "name": "Birleşik Devletler Minor Outlyıng Adaları"}, {"code": "BAC", "name": "Bismark Archipelago"}, {"code": "BO", "name": "Bolivya"}, {"code": "BA", "name": "Bosna -Hersek"}, {"code": "BW", "name": "Bostvana"}, {"code": "BVA", "name": "Bouvet Adası"}, {"code": "BR", "name": "Brezilya"}, {"code": "BN", "name": "Brunei"}, {"code": "BG", "name": "Bulgaristan"}, {"code": "BF", "name": "Burkina Faso"}, {"code": "MM", "name": "Burma"}, {"code": "BI", "name": "Burundi"}, {"code": "CV", "name": "Cape Verde"}, {"code": "KY", "name": "Cayman Adaları"}, {"code": "GI", "name": "Cebeli Tarık"}, {"code": "DZ", "name": "Cezayir"}, {"code": "CX", "name": "Chrıstmas Adaları"}, {"code": "DJ", "name": "Cibuti"}, {"code": "CC", "name": "Cocos Adaları"}, {"code": "CK", "name": "Cook Adaları"}, {"code": "TD", "name": "Çad"}, {"code": "CC", "name": "Çeçen Cumhuriyeti"}, {"code": "CZ", "name": "Çek Cumhuriyeti"}, {"code": "CN", "name": "Çin Halk Cumhuriyeti"}, {"code": "DC", "name": "Dağıstan Cumhuriyeti"}, {"code": "DK", "name": "Danimarka"}, {"code": "DT", "name": "Doğu Timor"}, {"code": "DO", "name": "Dominik Cumhuriyeti"}, {"code": "DM", "name": "Dominika"}, {"code": "DB", "name": "Dubai"}, {"code": "EC", "name": "Ekvator"}, {"code": "GQ", "name": "Ekvator Ginesi"}, {"code": "SV", "name": "El Salvador"}, {"code": "ID", "name": "Endonezya"}, {"code": "ER", "name": "Eritre"}, {"code": "ER", "name": "Eritre"}, {"code": "AM", "name": "Ermenistan"}, {"code": "EE", "name": "Estonya"}, {"code": "ET", "name": "Etiyopya"}, {"code": "FK", "name": "Falkland Adaları"}, {"code": "FO", "name": "Faroe Adaları"}, {"code": "FO", "name": "Faroe Adaları"}, {"code": "MA", "name": "Fas"}, {"code": "FJ", "name": "Fiji"}, {"code": "CI", "name": "Fildişi Sahili"}, {"code": "PH", "name": "Filipinler"}, {"code": "FI", "name": "Finlandiya"}, {"code": "FR", "name": "Fransa"}, {"code": "GF", "name": "Fransız Guyanası"}, {"code": "PF", "name": "Fransız Güney Toprakları"}, {"code": "PF", "name": "Fransız Polinezyası"}, {"code": "GA", "name": "Gabon"}, {"code": "GM", "name": "Gambiya"}, {"code": "GH", "name": "Gana"}, {"code": "GN", "name": "Gine"}, {"code": "GW", "name": "Gine-Bissau"}, {"code": "GD", "name": "Grenada"}, {"code": "GL", "name": "Grönland"}, {"code": "GP", "name": "Guadelup"}, {"code": "GU", "name": "Guam"}, {"code": "GT", "name": "Guatemala"}, {"code": "GY", "name": "Guyana"}, {"code": "ZA", "name": "Güney Afrika Cumhuriyeti"}, {"code": "GFR", "name": "Güney Fransız Toprakları"}, {"code": "GGS", "name": "Güney Georgıa Ve Güney Sandwıch Adaları"}, {"code": "GGS", "name": "Güney Georgia ve Güney Sandwich Adaları"}, {"code": "KR", "name": "Güney Kore Cumhuriyeti"}, {"code": "GE", "name": "Gürcistan"}, {"code": "HT", "name": "Haiti"}, {"code": "HAD", "name": "Heard Adaları Ve Mc Donald Adaları"}, {"code": "HR", "name": "Hırvatistan"}, {"code": "IN", "name": "Hindistan"}, {"code": "NL", "name": "Hollanda"}, {"code": "AN", "name": "Hollanda Antilleri"}, {"code": "HN", "name": "Honduras"}, {"code": "HK", "name": "Hong Kong"}, {"code": "IQ", "name": "Irak"}, {"code": "IO", "name": "İngiliz Hint Oky.Toprakları"}, {"code": "VG", "name": "İngiliz Virjin Adaları"}, {"code": "GB", "name": "İngiltere"}, {"code": "IR", "name": "İran"}, {"code": "IE", "name": "İrlanda"}, {"code": "ES", "name": "İspanya"}, {"code": "IL", "name": "İsrail"}, {"code": "SE", "name": "İsveç"}, {"code": "CH", "name": "İsviçre"}, {"code": "PS", "name": "İşgal Altındaki Filistin Toprağı"}, {"code": "IT", "name": "İtalya"}, {"code": "IS", "name": "İzlanda"}, {"code": "JM", "name": "Jamaika"}, {"code": "JP", "name": "Japonya"}, {"code": "KH", "name": "Kamboçya"}, {"code": "CM", "name": "Kamerun"}, {"code": "CA", "name": "Kanada"}, {"code": "MW", "name": "Karadağ"}, {"code": "QA", "name": "Katar"}, {"code": "KZ", "name": "Kazakistan"}, {"code": "KE", "name": "Kenya"}, {"code": "CY", "name": "Kıbrıs Rum Kesimi"}, {"code": "KG", "name": "Kırgızistan"}, {"code": "KI", "name": "Kiribati"}, {"code": "CC", "name": "Kokos Adaları"}, {"code": "CO", "name": "Kolombiya"}, {"code": "KM", "name": "Komoro Adaları"}, {"code": "CG", "name": "Kongo"}, {"code": "K", "name": "Kosova"}, {"code": "CR", "name": "Kosta Rika"}, {"code": "KB", "name": "Kutup Bölgeleri"}, {"code": "KW", "name": "Kuveyt"}, {"code": "KKTC", "name": "Kuzey Kıbrıs Türk Cumhuriyeti"}, {"code": "KP", "name": "Kuzey Kore Demokratik Halk Cum."}, {"code": "MP", "name": "Kuzey Mariana Adaları"}, {"code": "MP", "name": "Kuzey Mariana Adaları"}, {"code": "YE", "name": "Kuzey Yemen"}, {"code": "CU", "name": "Küba"}, {"code": "LA", "name": "Laos"}, {"code": "LS", "name": "Lesotho"}, {"code": "LV", "name": "Letonya"}, {"code": "LR", "name": "Liberya"}, {"code": "LY", "name": "Libya"}, {"code": "LI", "name": "Lihteştayn"}, {"code": "LT", "name": "Litvanya"}, {"code": "LB", "name": "Lübnan"}, {"code": "LU", "name": "Lüksemburg"}, {"code": "HU", "name": "Macaristan"}, {"code": "MG", "name": "Madagaskar"}, {"code": "MO", "name": "Makao"}, {"code": "MK", "name": "Makedonya"}, {"code": "MI", "name": "Malavi"}, {"code": "MV", "name": "Maldiv Adaları"}, {"code": "MY", "name": "Malezya"}, {"code": "ML", "name": "Mali"}, {"code": "MT", "name": "Malta"}, {"code": "MH", "name": "Marshall Adaları"}, {"code": "MH", "name": "Marshall Adaları"}, {"code": "MQ", "name": "Martinik"}, {"code": "MU", "name": "Mauritius"}, {"code": "YT", "name": "Mayotte"}, {"code": "MX", "name": "Meksika"}, {"code": "ML", "name": "Melilla"}, {"code": "CM", "name": "Melilla"}, {"code": "EG", "name": "Mısır"}, {"code": "FM", "name": "Mikronezya"}, {"code": "MN", "name": "Moğolistan"}, {"code": "MD", "name": "Moldova"}, {"code": "MC", "name": "Monaka"}, {"code": "MS", "name": "Montserrat"}, {"code": "MD", "name": "Montserrat"}, {"code": "MR", "name": "Moritanya"}, {"code": "MZ", "name": "Mozambik"}, {"code": "MM", "name": "Myanmar"}, {"code": "NA", "name": "Namibya"}, {"code": "NR", "name": "Nauru"}, {"code": "NP", "name": "Nepal"}, {"code": "NE", "name": "Nijer"}, {"code": "NG", "name": "Nijerya"}, {"code": "NI", "name": "Nikaragua"}, {"code": "NU", "name": "Niue"}, {"code": "NF", "name": "Norfolk Adası"}, {"code": "NF", "name": "Norfolk Adası"}, {"code": "NO", "name": "Norveç"}, {"code": "CF", "name": "Orta Afrika Cumhuriyeti"}, {"code": "UZ", "name": "Özbekistan"}, {"code": "PK", "name": "Pakistan"}, {"code": "PW", "name": "Palau"}, {"code": "PW", "name": "Palau"}, {"code": "PA", "name": "Panama"}, {"code": "PG", "name": "Papua Yeni Gine"}, {"code": "PY", "name": "Paraguay"}, {"code": "PE", "name": "Peru"}, {"code": "PN", "name": "Pitcairn"}, {"code": "PL", "name": "Polonya"}, {"code": "PT", "name": "Portekiz"}, {"code": "RE", "name": "Reunion"}, {"code": "RO", "name": "Romanya"}, {"code": "RW", "name": "Ruanda"}, {"code": "RU", "name": "Rusya Federasyonu"}, {"code": "WS", "name": "Samoa"}, {"code": "SM", "name": "San Marino"}, {"code": "SM", "name": "San Marino"}, {"code": "ST", "name": "Sao Tome And Prıncıpe"}, {"code": "SN", "name": "Senegal"}, {"code": "SP", "name": "Septe"}, {"code": "SAB", "name": "Seyşel Adaları Ve Bağlantıları"}, {"code": "SL", "name": "Sıerra Leone"}, {"code": "SR", "name": "Sırbistan"}, {"code": "SG", "name": "Singapur"}, {"code": "SK", "name": "Slovakya"}, {"code": "SI", "name": "Slovenya"}, {"code": "SB", "name": "Solomon Adaları"}, {"code": "SO", "name": "Somali"}, {"code": "LK", "name": "Sri Lanka"}, {"code": "HB", "name": "St. Helena Ve Bağlantıları"}, {"code": "LC", "name": "St. Lucia"}, {"code": "PM", "name": "St. Pierre Ve Miquelon"}, {"code": "VC", "name": "St Vincent Ve Grenadinler"}, {"code": "KN", "name": "St.Kıtts   Nevis"}, {"code": "SD", "name": "Sudan"}, {"code": "SR", "name": "Surinam"}, {"code": "SY", "name": "Suriye"}, {"code": "SA", "name": "Suudi Arabistan"}, {"code": "CL", "name": "Şili"}, {"code": "TJ", "name": "Tacikistan"}, {"code": "TZ", "name": "Tanzanya"}, {"code": "TS", "name": "Tataristan"}, {"code": "TH", "name": "Tayland"}, {"code": "TW", "name": "Tayvan"}, {"code": "TG", "name": "Togo"}, {"code": "TK", "name": "Tokelau"}, {"code": "TO", "name": "Tonga"}, {"code": "TT", "name": "Trinidad Ve Tobago"}, {"code": "TN", "name": "Tunus"}, {"code": "TC", "name": "Turks Ve Caicos Adası"}, {"code": "TV", "name": "Tuvalu"}, {"code": "TM", "name": "Türkmenistan"}, {"code": "UG", "name": "Uganda"}, {"code": "UA", "name": "Ukrayna"}, {"code": "OM", "name": "Umman"}, {"code": "UY", "name": "Uruguay"}, {"code": "JO", "name": "Ürdün"}, {"code": "VU", "name": "Vanuatu"}, {"code": "VA", "name": "Vatikan"}, {"code": "VE", "name": "Venezuella"}, {"code": "VN", "name": "Vietnam"}, {"code": "VI", "name": "Virgin Adaları"}, {"code": "WF", "name": "Wallis Ve Futuna Adaları"}, {"code": "YK", "name": "Yakutistan"}, {"code": "YE", "name": "Yemen"}, {"code": "NC", "name": "Yeni Kalodenya Ve Bağlantıları"}, {"code": "NZ", "name": "Yeni Zelanda"}, {"code": "NZ", "name": "Yeni Zelanda Okyanusu"}, {"code": "YU", "name": "Yugoslavya"}, {"code": "GR", "name": "Yunanistan"}, {"code": "CD", "name": "Zaire"}, {"code": "ZM", "name": "Zambia"}, {"code": "ZW", "name": "Zimbabve"}];
     const GENDER_ROWS = [["E", "ERKEK"], ["K", "KADIN"]];
@@ -1319,6 +1299,7 @@
       fileInput: document.getElementById("fileInput"),
       fileList: document.getElementById("fileList"),
       sourceText: document.getElementById("sourceText"),
+      sourceLangSelect: document.getElementById("sourceLangSelect"),
       useSmartAI: document.getElementById("useSmartAI"),
       useAI: document.getElementById("useAI"),
       apiKey: document.getElementById("apiKey"),
@@ -1370,10 +1351,89 @@
         "greece": "GR", "yunanistan": "GR",
         "united states": "US", "usa": "US", "amerika": "US",
         "united kingdom": "GB", "uk": "GB", "england": "GB", "ingiltere": "GB", "birlesik krallik": "GB", "canada": "CA", "kanada": "CA", "egypt": "EG", "misir": "EG", "mısır": "EG", "china": "CN", "hong kong": "HK", "taiwan": "TW", "korea": "KR", "south korea": "KR", "japan": "JP", "spain": "ES", "ispanya": "ES", "brazil": "BR", "brezilya": "BR", "colombia": "CO", "kolombiya": "CO", "portugal": "PT"
+        ,"mexico": "MX", "méxico": "MX", "meksika": "MX", "argentina": "AR", "arjantin": "AR", "chile": "CL", "şili": "CL", "sili": "CL", "peru": "PE", "perú": "PE", "colombia": "CO", "kolombiya": "CO", "uruguay": "UY", "uruguay republic": "UY", "brasil": "BR", "brazil": "BR", "portugal": "PT", "portekiz": "PT", "italy": "IT", "italia": "IT", "italya": "IT", "spain": "ES", "españa": "ES", "espana": "ES", "ispanya": "ES", "francia": "FR", "frança": "FR", "alemania": "DE", "alemanha": "DE", "germany": "DE", "rusia": "RU", "russia": "RU", "rusya": "RU", "ukrania": "UA", "ukraine": "UA", "united states of america": "US", "america": "US", "u s a": "US", "great britain": "GB", "britain": "GB", "iran": "IR", "india": "IN", "hindistan": "IN"
       };
       Object.entries(aliases).forEach(([k, v]) => map.set(norm(k), v));
       return map;
     }
+
+    const SOURCE_LANGUAGES = {
+      auto: "Auto-detect",
+      es: "Spanish",
+      pt: "Portuguese",
+      zh: "Chinese",
+      ko: "Korean",
+      ar: "Arabic",
+      en: "English",
+      tr: "Turkish",
+      ru: "Russian",
+      it: "Italian",
+      fr: "French"
+    };
+
+    function getSourceLanguageSelection(sampleText = "") {
+      const selected = els.sourceLangSelect?.value || appSourceLang || "auto";
+      if (selected && selected !== "auto") {
+        return { code: selected, name: SOURCE_LANGUAGES[selected] || selected, mode: "manual", confidence: 1 };
+      }
+      const detected = detectSourceLanguage(sampleText);
+      return { ...detected, name: SOURCE_LANGUAGES[detected.code] || "Auto-detect", mode: "auto" };
+    }
+
+    function detectSourceLanguage(text = "") {
+      const raw = String(text || "");
+      const lower = raw.toLocaleLowerCase("tr-TR");
+      const normalized = norm(raw);
+      const scores = { es: 0, pt: 0, zh: 0, ko: 0, ar: 0, en: 0, tr: 0, ru: 0, it: 0, fr: 0 };
+
+      const countRe = (re) => (raw.match(re) || []).length;
+      scores.zh += countRe(/[\u4E00-\u9FFF]/g) * 4;
+      scores.ko += countRe(/[\uAC00-\uD7AF]/g) * 4;
+      scores.ar += countRe(/[\u0600-\u06FF]/g) * 4;
+      scores.ru += countRe(/[\u0400-\u04FF]/g) * 4;
+      if (/[çğıöşüÇĞİÖŞÜ]/.test(raw)) scores.tr += 2.5;
+      if (/[ñáéíóúü¿¡]/i.test(raw)) scores.es += 0.8;
+      if (/[ãõçáâêô]/i.test(raw)) scores.pt += 0.8;
+      if (/[àâæçéèêëîïôœùûüÿ]/i.test(raw)) scores.fr += 0.6;
+
+      const keywordSets = {
+        tr: ["yolcu", "adi", "adı", "soyadi", "soyadı", "kimlik", "cinsiyet", "telefon", "ulke", "ülke", "uyruk", "erkek", "kadin", "kadın", "liste"],
+        en: ["passenger", "passport", "country", "nationality", "phone", "gender", "surname", "full name", "first name", "last name", "male", "female"],
+        es: ["pasaporte", "pais", "país", "nombre", "apellido", "apellidos", "salida", "nacionalidad", "telefono", "teléfono", "sexo", "hombre", "mujer"],
+        pt: ["passaporte", "pais", "país", "nome", "sobrenome", "apelido", "nacionalidade", "telefone", "sexo", "homem", "mulher", "saída", "saida"],
+        fr: ["passeport", "pays", "nom", "prenom", "prénom", "nationalite", "nationalité", "telephone", "téléphone", "sexe", "monsieur", "madame", "liste"],
+        it: ["passaporto", "paese", "nome", "cognome", "nazionalita", "nazionalità", "telefono", "sesso", "signore", "signora", "lista"],
+        ru: ["паспорт", "страна", "гражданство", "телефон", "имя", "фамилия", "пол", "муж", "жен"],
+        zh: ["护照", "国家", "姓名", "名字", "姓", "电话", "性别", "旅客", "乘客"],
+        ko: ["여권", "국가", "성명", "이름", "전화", "성별", "승객", "국적"],
+        ar: ["جواز", "دولة", "الجنسية", "الاسم", "الهاتف", "الجنس", "راكب", "مسافر"]
+      };
+      for (const [code, words] of Object.entries(keywordSets)) {
+        for (const word of words) {
+          const w = norm(word) || word.toLocaleLowerCase("tr-TR");
+          if (!w) continue;
+          if (w.includes(" ")) {
+            if (normalized.includes(w) || lower.includes(word.toLocaleLowerCase("tr-TR"))) scores[code] += 1.2;
+          } else if ((` ${normalized} `).includes(` ${w} `) || lower.includes(word.toLocaleLowerCase("tr-TR"))) {
+            scores[code] += 1;
+          }
+        }
+      }
+
+      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      const [bestCode, bestScore] = ranked[0] || ["auto", 0];
+      if (!bestScore || bestScore < 1.1) return { code: "auto", confidence: 0 };
+      return { code: bestCode, confidence: Math.min(1, bestScore / 6) };
+    }
+
+    function tesseractLanguageForSource(sampleText = "") {
+      const selected = getSourceLanguageSelection(sampleText).code;
+      const map = { tr: "tur", en: "eng", es: "spa", pt: "por", zh: "chi_sim", ko: "kor", ar: "ara", ru: "rus", it: "ita", fr: "fra" };
+      if (selected && selected !== "auto" && map[selected]) return map[selected];
+      // Keep auto OCR light and reliable; users can choose a specific language for heavier OCR packs.
+      return "tur+eng";
+    }
+
 
     const MALE_NAME_HINTS = new Set([
       "ahmet", "mehmet", "mustafa", "ali", "veli", "hasan", "huseyin", "hüseyin", "ibrahim", "ismail", "osman", "omer", "ömer", "yusuf", "murat", "emre", "burak", "serkan", "furkan", "kaan", "efe", "arda", "baris", "barış", "deniz", "can", "cem", "cemal", "engin", "erhan", "erkan", "fatih", "halil", "kerem", "levent", "metin", "oguz", "oğuz", "onur", "selim", "sinan", "taylan", "umut", "volkan", "mert", "enes", "bilal", "ramazan", "recep",
@@ -1438,6 +1498,13 @@
     ["hatem","sherif","salah","maged","hossam","farrag","alaaeldin","ramy","moustafa","hany","aly","maicel","magdy","daoud"].map(norm).forEach(x => MALE_NAME_HINTS.add(x));
     ["riham","ayat"].map(norm).forEach(x => FEMALE_NAME_HINTS.add(x));
 
+
+    // Extra names from multilingual passenger-list training examples.
+    ["juan","carlos","diego","luis","alberto","santiago","miguel","ruiz","fernandez","torres","santos"].map(norm).forEach(x => MALE_NAME_HINTS.add(x));
+    ["maria","jose","ana","sofia","valentina","camila","beatriz","lucia","isabel","paula","jimena","ramirez","silva","costa"].map(norm).forEach(x => FEMALE_NAME_HINTS.add(x));
+    ["lukas","ivan","reza","john","paul","pierre","luc","denis","serge"].map(norm).forEach(x => MALE_NAME_HINTS.add(x));
+    ["emily","claire","giulia","olena","ananya","suzanne","monique","anne","camille","marie","louise","helene","hélène"].map(norm).forEach(x => FEMALE_NAME_HINTS.add(x));
+
     // MiniAI v6: extra romanized Chinese / Hong Kong / Taiwan given-name clues.
     // These are useful for worst-case raw lists where each row contains only a romanized name.
     const CHINESE_MALE_GIVEN_HINTS = [
@@ -1455,6 +1522,7 @@
       "wang","zhang","liu","chen","yang","huang","zhao","wu","zhou","xu","sun","ma","zhu","hu","guo","lin","he","gao","luo","zheng","liang","xie","tang","deng",
       "khan","singh","kaur","patel","sharma","gupta","kumar","devi","das","roy","chowdhury","hossain","rahman","islam","ali","ahmed","akhtar","mirza"
     ].map(norm));
+    ["verdurme","eerten","linders","peperkamp","terpstra","giesbers","setteur","roorda","scheibenstock","brule","brulé","landry","desforges","lesage","lefevre","moreau","bernard"].map(norm).forEach(x => GLOBAL_FAMILY_NAME_HINTS.add(x));
 
     [
       "cai", "cao", "yu", "yip", "ye", "chin", "chang", "pang", "che", "chan", "cheung", "chow", "lau", "leung", "wong", "ng", "tsang", "tse", "tang", "tsai", "hsu", "hsieh", "hsiao", "chia", "chiu"
@@ -1537,20 +1605,33 @@
       if (!COUNTRY_NAME_HINTS[code]) COUNTRY_NAME_HINTS[code] = [];
       COUNTRY_NAME_HINTS[code].push(...words);
     }
-    COUNTRY_NAME_HINTS.TR.push(...["salih","kaymak","cengiz","kilavuz","kılavuz","eyyup","eyüp","kirmizitas","kırmızıtaş","alkan","ismail","bayrak","halil","kirboga","kırboğa","korunur","birgul","birgül","bulut","aslı","demir","mahmut","noyan","sahami"].map(norm));
+    COUNTRY_NAME_HINTS.TR.push(...["salih","kaymak","cengiz","kilavuz","kılavuz","eyyup","eyüp","kirmizitas","kırmızıtaş","alkan","ismail","bayrak","halil","kirboga","kırboğa","korunur","birgul","birgül","bulut","aslı","demir","mahmut","noyan","sahami","mina","aksoy","eroglu","eroğlu","guler","güler","bayraktar"].map(norm));
     COUNTRY_NAME_HINTS.EG.push(...["hatem","maisara","sherif","azab","salah","eldessouki","riham","abdelmaksoud","mohamed","elerian","maged","elsahl","ibrahim","daoud","hossam","moussa","farrag","sharara","alaaeldin","elbesoumy","elkassas","ramy","elwahloul","elbahlohul","elwahloul","moustafa","rezk","badwy","hany","hegazia","aly","qunawy","elgaml","deif","maicel","magdy","gharib","ayat","ragheb"].map(norm));
     if (!COUNTRY_NAME_HINTS.NL) COUNTRY_NAME_HINTS.NL = [];
     COUNTRY_NAME_HINTS.NL.push(...["van","eerten","verdurme","linders","peperkamp","terpstra","boekhorst","giesbers","noord","bours","hautvast","setteur","roorda","scheibenstock","bom","bosch","corbey","prins","vuijsje","hulsebosch","fornier","dutch","nederland","netherlands"].map(norm));
     if (!COUNTRY_NAME_HINTS.FR) COUNTRY_NAME_HINTS.FR = [];
-    COUNTRY_NAME_HINTS.FR.push(...["lafosse","gautier","margueritat","valluis","caspard","fougeirol","krebs","brule","brulé","landry","desforges","lesage","suzanne","denis","monique","serge","marie","louise","henri","frederique","elisabeth","judith","anne","lise","mariette","fadia"].map(norm));
+    COUNTRY_NAME_HINTS.FR.push(...["lafosse","gautier","margueritat","valluis","caspard","fougeirol","krebs","brule","brulé","landry","desforges","lesage","lefevre","moreau","bernard","martin","suzanne","denis","monique","monic","jeannette","serge","paul","luc","pierre","camille","marie","louise","henri","frederique","elisabeth","judith","anne","lise","mariette","fadia"].map(norm));
     if (!COUNTRY_NAME_HINTS.CA) COUNTRY_NAME_HINTS.CA = [];
-    COUNTRY_NAME_HINTS.CA.push(...["brule","brulé","landry","desforges","lesage","monique","suzanne","denis","serge","jeannette"].map(norm));
+    COUNTRY_NAME_HINTS.CA.push(...["quebec","canada","canadien","canadian"].map(norm));
     if (!COUNTRY_NAME_HINTS.BR) COUNTRY_NAME_HINTS.BR = [];
     COUNTRY_NAME_HINTS.BR.push(...["aparecida","sebastiao","sebastião","luiza","izabel","pereira","amaral"].map(norm));
     if (!COUNTRY_NAME_HINTS.CO) COUNTRY_NAME_HINTS.CO = [];
     COUNTRY_NAME_HINTS.CO.push(...["forero","velandia","russi","rojas","vargas","gil","henao","escobar","gutierrez","posso","colmenares"].map(norm));
     if (!COUNTRY_NAME_HINTS.ES) COUNTRY_NAME_HINTS.ES = [];
-    COUNTRY_NAME_HINTS.ES.push(...["moreno","sanchez","del","pozuelo","garcia","alvarez","rios","bonifaz","ocampo","vega","huete","herrera","barba"].map(norm));
+    COUNTRY_NAME_HINTS.ES.push(...["moreno","sanchez","del","pozuelo","garcia","alvarez","rios","bonifaz","ocampo","vega","huete","herrera","barba","lopez","ruiz","juan","carlos","maria","jose","madrid","españa","espana"].map(norm));
+
+    if (!COUNTRY_NAME_HINTS.MX) COUNTRY_NAME_HINTS.MX = [];
+    COUNTRY_NAME_HINTS.MX.push(...["hernandez","hernández","ana","sofia","méxico","mexico","mex","xochitl"].map(norm));
+    if (!COUNTRY_NAME_HINTS.AR) COUNTRY_NAME_HINTS.AR = [];
+    COUNTRY_NAME_HINTS.AR.push(...["diego","fernandez","fernández","argentina","buenos","aires"].map(norm));
+    if (!COUNTRY_NAME_HINTS.CL) COUNTRY_NAME_HINTS.CL = [];
+    COUNTRY_NAME_HINTS.CL.push(...["valentina","silva","chile","chileno","chilena"].map(norm));
+    if (!COUNTRY_NAME_HINTS.PE) COUNTRY_NAME_HINTS.PE = [];
+    COUNTRY_NAME_HINTS.PE.push(...["luis","alberto","torres","peru","perú","peruano","peruana"].map(norm));
+    if (!COUNTRY_NAME_HINTS.UY) COUNTRY_NAME_HINTS.UY = [];
+    COUNTRY_NAME_HINTS.UY.push(...["santiago","vega","uruguay","uruguayo","uruguaya"].map(norm));
+    if (!COUNTRY_NAME_HINTS.PT) COUNTRY_NAME_HINTS.PT = [];
+    COUNTRY_NAME_HINTS.PT.push(...["miguel","santos","costa","portugal","portuguese","portugues","português"].map(norm));
 
     Object.keys(COUNTRY_NAME_HINTS).forEach(code => {
       COUNTRY_NAME_HINTS[code] = new Set(COUNTRY_NAME_HINTS[code].map(norm));
@@ -1812,6 +1893,11 @@
     function init() {
       applyTheme(appTheme);
       applyLanguage(appLang);
+      if (els.sourceLangSelect) els.sourceLangSelect.value = appSourceLang;
+      els.sourceLangSelect?.addEventListener("change", e => {
+        appSourceLang = e.target.value || "auto";
+        localStorage.setItem("uetds_source_lang", appSourceLang);
+      });
       els.languageSelect?.addEventListener("change", e => applyLanguage(e.target.value));
       els.themeSelect?.addEventListener("change", e => applyTheme(e.target.value));
 
@@ -1950,7 +2036,7 @@
         }
         let text = "";
         try {
-          const result = await Tesseract.recognize(dataUrl, "tur+eng");
+          const result = await Tesseract.recognize(dataUrl, tesseractLanguageForSource(els.sourceText?.value || ""));
           text = result?.data?.text || "";
         } catch (err) {
           console.warn(err);
@@ -2050,7 +2136,7 @@
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       await page.render({ canvasContext: ctx, viewport }).promise;
-      const result = await Tesseract.recognize(canvas, "tur+eng");
+      const result = await Tesseract.recognize(canvas, tesseractLanguageForSource(els.sourceText?.value || ""));
       return result.data.text || "";
     }
 
@@ -2090,6 +2176,8 @@
       els.runBtn.disabled = true;
       els.runBtn.textContent = t("extracting");
       log("Extraction started...", true);
+      const sourceLangInfo = getSourceLanguageSelection(rawText || localRawText);
+      log(t("sourceLangDetected", { language: sourceLangInfo.name + (sourceLangInfo.mode === "auto" && sourceLangInfo.code !== "auto" ? " (auto)" : "") }));
 
       let passengers = [];
 
@@ -2184,9 +2272,14 @@
 
     const SMART_AI_MODELS = ["claude-opus-4-8", "claude-sonnet-4-6", "claude-3-5-sonnet-latest"];
 
-    function buildSmartAiSystemPrompt() {
+    function buildSmartAiSystemPrompt(sampleText = "") {
       const codes = COUNTRY_ROWS.map(c => `${String(c.code).toUpperCase()}=${c.name}`).join("; ");
+      const langInfo = getSourceLanguageSelection(sampleText);
+      const langLine = langInfo.code === "auto"
+        ? "Source language: auto-detect. Supported source languages include Spanish, Portuguese, Chinese, Korean, Arabic, English, Turkish, Russian, Italian and French. The list may contain mixed-language headers and names."
+        : `Source language selected/detected: ${langInfo.name}. Still preserve passenger names exactly and handle mixed-language country/nationality fields.`;
       return [
+        langLine,
         "You are an expert data-extraction engine that turns messy Turkish/international travel and booking documents into clean passenger records for the Turkish UETDS 'excelyolcusablon' Excel template. Accuracy is critical: these rows are submitted to a government system, so every passenger must be captured and every field must be correct.",
         "",
         "INPUT can be any mix of: raw pasted text, spreadsheet rows (tab-separated), copied PDF tables, OCR output, and images (printed OR handwritten, in any orientation). Read ALL of it. When both an image and its OCR text are provided for the same list, trust the image for characters/spelling and use the text only to cross-check digits.",
@@ -2216,7 +2309,7 @@
         "- Ambiguous unisex names: pick the statistically more likely gender and lower confidence slightly. NEVER leave gender blank.",
         "",
         "COUNTRY CODE (UETDS 2-letter codes below):",
-        "- If nationality/country/passport-issuing country is written, map it to the correct code.",
+        "- If nationality/country/passport-issuing country is written in any supported language (Spanish/Portuguese/Chinese/Korean/Arabic/English/Turkish/Russian/Italian/French), map it to the correct UETDS code.",
         "- A valid 11-digit Turkish ID (TCKN) => TR. Turkish names/surnames => TR.",
         "- Passport-only lists: infer citizenship from the name + script. Arabic names with 'A'+8-digit passports are typically Egyptian => EG. French names => FR. German => DE. English/anglophone ambiguous names: choose the most likely, lower confidence.",
         "- If genuinely undeterminable, use TR and set confidence <= 0.5.",
@@ -2295,7 +2388,8 @@
     }
 
     async function smartExtractOne(content, label) {
-      const system = buildSmartAiSystemPrompt();
+      const sampleText = Array.isArray(content) ? content.map(b => b && b.type === "text" ? b.text : "").join("\n") : String(content || "");
+      const system = buildSmartAiSystemPrompt(sampleText);
       const out = await callAnthropic([{ role: "user", content }], system, { prefill: '{"passengers":' });
       const json = safeJsonParse(out);
       if (!json || !Array.isArray(json.passengers)) {
@@ -2371,13 +2465,14 @@
                 "You extract passenger records for the Turkish UETDS excelyolcusablon Excel template.",
                 "Return only valid JSON.",
                 "Schema: {\"passengers\":[{\"countryCode\":\"TR|DE|...\",\"firstName\":\"\",\"lastName\":\"\",\"idOrPassportNo\":\"\",\"gender\":\"E|K|\",\"phone\":\"\",\"hesCode\":\"\",\"seatNo\":\"\",\"confidence\":0.0,\"notes\":\"\"}]}",
+                getSourceLanguageSelection(chunks[i]).code === "auto" ? "Source language: auto-detect among Spanish, Portuguese, Chinese, Korean, Arabic, English, Turkish, Russian, Italian and French." : `Source language selected/detected: ${getSourceLanguageSelection(chunks[i]).name}.`,
                 "Rules:",
                 "- countryCode must be an ISO-like country code from Turkish UETDS country codes when visible; use TR for Turkish citizens or valid 11-digit Turkish ID.",
                 "- If country/nationality is missing, infer the most likely country from the passenger name; for Turkish-looking names use TR. If still uncertain, use TR with lower confidence.",
                 "- idOrPassportNo should contain TC Kimlik number or passport number only, no spaces. If no TC/passport number is available, write 1.",
                 "- gender E for Erkek/Male/M, K for Kadın/Female/F. If missing, infer gender from the first name when possible.",
                 "- phone and hesCode may be blank when they are not visible. Do not invent phone or HES values.",
-                "- Split full names into firstName and lastName. If uncertain, put final token as lastName.",
+                "- Split full names into firstName and lastName. If the list is Chinese/Korean/Japanese-style surname-first, put the first token/character surname into lastName and the rest into firstName; otherwise if uncertain, put final token as lastName.",
                 "- Ignore drivers/personnel unless they are clearly passengers."
               ].join("\n")
             },
@@ -2496,6 +2591,16 @@
           p[field] = cellText(row[idx]);
         }
 
+        if (p.fullName && headerInfo.map.fullName !== undefined && Object.keys(headerInfo.map).length === 1 && (/\d/.test(p.fullName) || findGender(p.fullName) || findCountryCode(p.fullName))) {
+          const parsedLine = parsePassengerLine(p.fullName);
+          if (parsedLine && (parsedLine.firstName || parsedLine.lastName || parsedLine.idOrPassportNo || parsedLine.phone)) {
+            parsedLine.source = `${sheet.fileName} / ${sheet.sheetName}`;
+            parsedLine.confidence = Math.max(Number(parsedLine.confidence) || 0, .80);
+            out.push(parsedLine);
+            continue;
+          }
+        }
+
         if (p.fullName) {
           const parts = splitName(p.fullName);
           if (!p.firstName || !p.lastName || norm(p.firstName) === norm(p.lastName)) {
@@ -2511,9 +2616,71 @@
         }
 
         if (!p.idOrPassportNo && p.tcKimlikPasaportNo) p.idOrPassportNo = p.tcKimlikPasaportNo;
+        const fullPersonText = p.fullName || [p.firstName, p.lastName].filter(Boolean).join(" ");
+        if (fullPersonText && !isLikelyPersonCell(fullPersonText)) continue;
         if (p.firstName || p.lastName || p.fullName || p.idOrPassportNo || p.phone) {
           p.source = `${sheet.fileName} / ${sheet.sheetName}`;
           p.confidence = .80;
+          out.push(p);
+        }
+      }
+      return out;
+    }
+
+
+
+    function extractGroupedPassengerColumns(sheet, headerNorm) {
+      const rows = sheet.rows || [];
+      const roleOrder = ["member", "spouse", "child1", "child2", "child3", "guest1", "guest2"];
+      const roleMap = new Map();
+
+      function roleFromHeader(h, idx) {
+        if (/(^| )(uye|üye|member|ana yolcu|primary)( |$)/.test(h)) return "member";
+        if (/(^| )(es|eş|spouse|wife|husband)( |$)/.test(h)) return "spouse";
+        if (/(^| )(cocuk|çocuk|child|kid)( |$)/.test(h)) return `child${idx}`;
+        if (/(^| )(misafir|guest)( |$)/.test(h)) return `guest${idx}`;
+        return "";
+      }
+
+      headerNorm.forEach((h, idx) => {
+        if (!h) return;
+        const role = roleFromHeader(h, idx);
+        if (!role) return;
+        if (!roleMap.has(role)) roleMap.set(role, { role });
+        const group = roleMap.get(role);
+        if (/(tc|tckn|kimlik|pasaport|passport|identity|jcr|جواز)/.test(h)) group.id = idx;
+        else if (/(telefon|phone|gsm|mobile|tel|telefone|telefono|هاتف)/.test(h)) group.phone = idx;
+        else if (/(soyad|surname|last|family|apellido|sobrenome|cognome|фамилия|اللقب)/.test(h)) group.lastName = idx;
+        else if (/(ad|adi|adı|isim|name|first|given|nombre|nome|prenom|prénom|имя|الاسم)/.test(h)) group.firstName = idx;
+      });
+
+      const groups = [...roleMap.values()].filter(g => g.firstName !== undefined || g.lastName !== undefined);
+      if (groups.length < 2) return [];
+      groups.sort((a, b) => {
+        const ia = roleOrder.indexOf(a.role); const ib = roleOrder.indexOf(b.role);
+        return (ia >= 0 ? ia : 99) - (ib >= 0 ? ib : 99) || (a.firstName ?? 999) - (b.firstName ?? 999);
+      });
+
+      const out = [];
+      for (let r = 0; r < rows.length; r++) {
+        const row = rows[r] || [];
+        if (r === 0 || row.every(v => !cellText(v))) continue;
+        const primary = groups[0];
+        const primaryLast = primary?.lastName !== undefined ? cellText(row[primary.lastName]) : "";
+        for (const group of groups) {
+          const first = group.firstName !== undefined ? cellText(row[group.firstName]) : "";
+          const last = group.lastName !== undefined ? cellText(row[group.lastName]) : "";
+          if (!first && !last) continue;
+          let fullName = [first, last].filter(Boolean).join(" ").trim();
+          if (!last && first && group.role.startsWith("child") && primaryLast) fullName = `${first} ${primaryLast}`;
+          if (!isLikelyPersonCell(fullName)) continue;
+          const p = {
+            fullName,
+            idOrPassportNo: group.id !== undefined ? cellText(row[group.id]) : "",
+            phone: group.phone !== undefined ? cellText(row[group.phone]) : "",
+            confidence: .88,
+            source: `${sheet.fileName} / ${sheet.sheetName}`
+          };
           out.push(p);
         }
       }
@@ -2528,6 +2695,11 @@
       const idCols = [];
       const phoneCols = [];
 
+
+
+      const groupedPassengerRows = extractGroupedPassengerColumns(sheet, headerNorm);
+      if (groupedPassengerRows.length) return groupedPassengerRows;
+
       headerNorm.forEach((h, idx) => {
         if (!h) return;
         if (/(tc|tckn|kimlik|pasaport|passport|identity)/.test(h)) idCols.push(idx);
@@ -2537,7 +2709,7 @@
         if (isName) nameCols.push(idx);
       });
 
-      if (!nameCols.length) return [];
+      if (nameCols.length < 2) return [];
       const out = [];
       for (let r = headerRowIndex + 1; r < rows.length; r++) {
         const row = rows[r] || [];
@@ -2591,8 +2763,18 @@
             if (!countryCandidate && findCountryCode(c)) countryCandidate = findCountryCode(c);
             if (!genderCandidate && normalizeGender(c)) genderCandidate = normalizeGender(c);
           }
-        } else if (cells.length === 1 && isLikelyPersonCell(first)) {
-          nameCandidate = first;
+        } else if (cells.length === 1) {
+          if (isNoiseLine(first)) continue;
+          if (/\d/.test(first) || findGender(first) || findCountryCode(first)) {
+            const parsed = parsePassengerLine(first);
+            if (parsed && (parsed.firstName || parsed.lastName || parsed.idOrPassportNo || parsed.phone)) {
+              parsed.confidence = Math.max(Number(parsed.confidence) || 0, .72);
+              parsed.source = `${sheet.fileName} / ${sheet.sheetName}`;
+              out.push(parsed);
+              continue;
+            }
+          }
+          if (isLikelyPersonCell(first)) nameCandidate = first;
         } else if (cells.length >= 2) {
           const possible = cells.find(c => isLikelyPersonCell(c));
           if (possible) nameCandidate = possible;
@@ -2614,14 +2796,14 @@
       const tokens = cleaned.split(/\s+/).filter(Boolean);
       if (tokens.length < 1 || tokens.length > 7) return false;
       if (tokens.length === 1 && !isKnownGivenNameToken(tokens[0])) return false;
-      const bad = new Set(["file", "sheet", "page", "hotel", "room", "note", "list", "liste", "otobus", "otobüs", "ucak", "uçak", "balayi", "balayı", "dbl", "twin", "twn", "sng"]);
+      const bad = new Set(["file", "sheet", "page", "hotel", "room", "note", "list", "liste", "otobus", "otobüs", "ucak", "uçak", "balayi", "balayı", "dbl", "twin", "twn", "sng", "tourism", "turizm", "travel", "agency", "company", "toplam", "total", "federasyonu", "federation"]);
       return tokens.every(t => !bad.has(norm(t))) && /\p{L}/u.test(cleaned);
     }
 
     function isRoomOrNonPassengerValue(value) {
       const n = norm(value);
       if (!n) return true;
-      const bad = new Set(["dbl", "double", "twin", "twn", "sgl", "sng", "single", "trp", "room", "oda", "otel", "hotel", "note", "not", "balayi", "balayı", "otobus", "otobüs", "ucak", "uçak", "transfer", "airport", "taksim", "occidental", "barcelo", "bodrum", "gebze", "dilovasi", "dilovası", "fabrika", "sube", "şube", "none", "null", "undefined", "-"]);
+      const bad = new Set(["dbl", "double", "twin", "twn", "sgl", "sng", "single", "trp", "room", "oda", "otel", "hotel", "note", "not", "balayi", "balayı", "otobus", "otobüs", "ucak", "uçak", "transfer", "airport", "taksim", "occidental", "barcelo", "bodrum", "gebze", "dilovasi", "dilovası", "fabrika", "sube", "şube", "tourism", "turizm", "travel", "agency", "company", "toplam", "total", "federasyonu", "federation", "none", "null", "undefined", "-"]);
       if (bad.has(n)) return true;
       if (/^\d+$/.test(n)) return true;
       if (/^(db|dbl|tw|twn|twin|sgl|sng|trp)\b/.test(n)) return true;
@@ -2630,13 +2812,13 @@
 
     function findHeaderRow(rows) {
       const aliases = {
-        fullName: ["ad soyad", "adı soyadı", "adi soyadi", "ad soyadı", "isim soyisim", "name surname", "full name", "passenger", "yolcu"],
-        countryCode: ["ülke", "ulke", "uyruk", "country", "nationality", "ulus"],
-        firstName: ["adı", "adi", "ad", "isim", "first name", "given", "given name", "name"],
-        lastName: ["soyadı", "soyadi", "soyad", "surname", "last name", "family", "family name", "soyisim"],
-        idOrPassportNo: ["tc", "tckn", "kimlik", "pasaport", "passport", "id no", "identity", "tc kimlik", "tc kimlik pasaport no"],
-        gender: ["cinsiyet", "gender", "sex", "ms/mr", "mr/ms", "title", "unvan", "ünvan", "hitap"],
-        phone: ["telefon", "phone", "gsm", "mobile", "tel", "telekon"],
+        fullName: ["ad soyad", "adı soyadı", "adi soyadi", "ad soyadı", "isim soyisim", "name surname", "full name", "name s", "names", "passenger", "yolcu", "nombre completo", "nombre y apellido", "nome completo", "nome e sobrenome", "nom complet", "nome cognome", "姓名", "성명", "الاسم الكامل"],
+        countryCode: ["ülke", "ulke", "uyruk", "country", "nationality", "ulus", "pais", "país", "paese", "pays", "nacionalidad", "nacionalidade", "nationalite", "nationalité", "nazionalita", "nazionalità", "страна", "гражданство", "国籍", "国家", "나라", "국적", "الجنسية", "الدولة"],
+        firstName: ["adı", "adi", "ad", "isim", "first name", "given", "given name", "name", "nombre", "nome", "prenom", "prénom", "имя", "名字", "이름", "الاسم"],
+        lastName: ["soyadı", "soyadi", "soyad", "surname", "last name", "family", "family name", "soyisim", "apellido", "apellidos", "sobrenome", "cognome", "nom", "фамилия", "姓", "성", "اللقب", "العائلة"],
+        idOrPassportNo: ["tc", "tckn", "kimlik", "pasaport", "passport", "id no", "identity", "tc kimlik", "tc kimlik pasaport no", "pasaporte", "passaporte", "passeport", "passaporto", "паспорт", "护照", "여권", "جواز"],
+        gender: ["cinsiyet", "gender", "sex", "sexo", "genero", "género", "sexe", "sesso", "пол", "성별", "الجنس", "ms/mr", "mr/ms", "title", "unvan", "ünvan", "hitap"],
+        phone: ["telefon", "phone", "gsm", "mobile", "tel", "telekon", "telefono", "teléfono", "telefone", "telephone", "téléphone", "телефон", "电话", "전화", "هاتف"],
         hesCode: ["hes", "hes kodu", "hescodu"],
         seatNo: ["koltuk", "seat"]
       };
@@ -2658,6 +2840,9 @@
       function detectHeaderField(cell) {
         const h = norm(cell);
         if (!h) return "";
+        // Single-column labels such as "Name" or "Name(s)" are full-name columns,
+        // not first-name-only columns.
+        if (["name", "names", "name s"].includes(h)) return "fullName";
         // Combined full-name headers must be treated as one fullName column,
         // not duplicated into both ADI and SOYADI.
         if (aliases.fullName.some(a => headerMatches(h, a))) return "fullName";
@@ -2684,7 +2869,7 @@
           usedColumns.add(idx);
           score++;
         });
-        if (score >= 1 && (map.fullName || map.firstName || map.lastName) && (!best || score > best.score)) best = { rowIndex, map, score };
+        if (score >= 1 && (map.fullName !== undefined || map.firstName !== undefined || map.lastName !== undefined) && (!best || score > best.score)) best = { rowIndex, map, score };
       });
       return best;
     }
@@ -2719,7 +2904,7 @@
         "adi soyadi", "tc kimlik", "pasaport", "telefon", "cinsiyet", "uyruk",
         "yolcu listesi", "isim listesi", "passenger list", "tourism transportation",
         "turizm tasimaciligi", "turizm", "konforlu", "guvenli", "profesyonel",
-        "sheet", "page", "pasted text", "file", "name s", "names", "name", "head office", "contact person", "otel adi", "egitim tarihi"
+        "sheet", "page", "pasted text", "file", "name s", "names", "name", "nombre completo", "pasaporte", "pais", "país", "ocr metin blogu", "ocr metin bloğu", "sira ad soyad kimlik cinsiyet", "head office", "contact person", "otel adi", "egitim tarihi"
       ];
       if (headers.some(h => n === h || (n.includes(h) && n.length < 100))) return true;
       return false;
@@ -2893,8 +3078,11 @@
 
     function findGender(s) {
       const n = norm(s);
-      if (/\b(erkek|male|bay|mr|m|e)\b/.test(n)) return "E";
-      if (/\b(kadin|female|bayan|mrs|ms|f|k)\b/.test(n)) return "K";
+      // Check female titles first so "Mrs. M. ..." is not mistaken for a male "M" marker.
+      if (/\b(kadin|female|bayan|mrs|ms|miss|mme|madame|f|k)\b/.test(n)) return "K";
+      if (/\b(erkek|male|bay|mr|mister|e)\b/.test(n)) return "E";
+      // A bare M is accepted only when it is the whole cell/field, not an initial inside a name.
+      if (n === "m") return "E";
       return "";
     }
 
@@ -2988,8 +3176,16 @@
         .replace(/\s+/g, " ")
         .trim();
 
-      const blacklist = new Set(["mr", "mrs", "ms", "bay", "bayan", "sayin", "sayın", "yolcu", "passenger"]);
-      const tokens = text.split(/\s+/).filter(t => t && !blacklist.has(norm(t)));
+      const blacklist = new Set(["mr", "mrs", "ms", "miss", "mme", "mlle", "madame", "monsieur", "sr", "sra", "senor", "señor", "senora", "señora", "sig", "sigra", "dr", "bay", "bayan", "sayin", "sayın", "yolcu", "passenger"]);
+      let tokens = text.split(/\s+/).filter(t => t && !blacklist.has(norm(t)));
+      const isInitialLike = (tok) => {
+        const raw = String(tok || "").trim();
+        const compact = raw.replace(/[.\s]/g, "");
+        return raw.includes(".") && /^[\p{L}]{1,4}$/u.test(compact);
+      };
+      if (tokens.length >= 3 && isKnownGivenNameToken(tokens[0])) {
+        tokens = tokens.filter((tok, idx) => idx === 0 || !isInitialLike(tok));
+      }
       if (tokens.length === 0) return { firstName: "", lastName: "" };
       if (tokens.length === 1) return { firstName: titleCase(tokens[0]), lastName: "" };
 
@@ -3092,6 +3288,7 @@
       let id = normalizeId(rawId);
       const phone = normalizePhone(p.phone || p.telefon || p.telefonNo || "");
       let gender = normalizeGender(p.gender || p.cinsiyet || "");
+      if (!gender) gender = findGender([p.fullName, p.firstName, p.lastName].filter(Boolean).join(" "));
 
       const warnings = [];
 
