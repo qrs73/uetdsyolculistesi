@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sfurkankahraman.github.io/uetds-yolcu-listesi-hazirlayici/sitemap.xml
+Sitemap: https://qrs73.github.io/uetdsyolculistesi/sitemap.xml
