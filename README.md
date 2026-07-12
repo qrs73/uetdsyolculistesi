@@ -1,37 +1,11 @@
 # UETDS Yolcu Listesi Hazırlayıcı
 
-GitHub Pages package.
+PDF, Excel, CSV, TXT, Word, görsel ve metin yolcu listelerini UETDS/e-Devlet Excel biçimine dönüştüren ücretsiz web uygulaması.
 
-## Publish on GitHub Pages
+## Canlı site
 
-1. Create a new GitHub repository.
-2. Upload all files in this folder to the repository root.
-3. Make sure the main page is named `index.html`.
-4. Go to **Settings → Pages**.
-5. Select branch `main` and folder `/root`.
-6. Save and wait for GitHub Pages to publish.
+https://qrs73.github.io/uetdsyolculistesi/
 
-## Google indexing
+## Kurulum
 
-- Update `sitemap.xml` and `robots.txt` with your real URL.
-- Add the site to Google Search Console.
-- Submit `sitemap.xml`.
-- Keep `about.html`, `privacy.html`, and `contact.html` for trust and AdSense review.
-
-## Ads
-
-- The top advertisement area is already in `index.html`.
-- For direct sponsor ads, replace the placeholder text in the ad banner.
-- For AdSense, apply first, then replace `ads.txt` with your real publisher ID and paste the AdSense script into `index.html`.
-
-## Contact
-
-Satılmış Furkan Kahraman — s.furkankahraman@gmail.com
-
-
-## Google Search Console verification
-
-This package includes `google0b08d1ea100de13b.html` in the website root. After publishing to GitHub Pages, verify the property in Google Search Console using the HTML file method. The file must be reachable at:
-
-`https://YOUR-DOMAIN/google0b08d1ea100de13b.html`
-
+Bu klasördeki dosyaların tamamını GitHub deposunun kök dizinine yükleyin. GitHub Pages ayarında `main` ve `/root` seçili olmalıdır. Ardından Google Search Console'a siteyi ekleyip `sitemap.xml` dosyasını gönderin.
