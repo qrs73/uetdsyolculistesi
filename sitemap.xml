@@ -1,8 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://sfurkankahraman.github.io/uetds-yolcu-listesi-hazirlayici/</loc><priority>1.0</priority></url>
-  <url><loc>https://sfurkankahraman.github.io/uetds-yolcu-listesi-hazirlayici/about.html</loc><priority>0.7</priority></url>
-  <url><loc>https://sfurkankahraman.github.io/uetds-yolcu-listesi-hazirlayici/privacy.html</loc><priority>0.6</priority></url>
-  <url><loc>https://sfurkankahraman.github.io/uetds-yolcu-listesi-hazirlayici/contact.html</loc><priority>0.6</priority></url>
-  <url><loc>https://sfurkankahraman.github.io/uetds-yolcu-listesi-hazirlayici/terms.html</loc><priority>0.4</priority></url>
+
+  <url>
+    <loc>https://qrs73.github.io/uetdsyolculistesi/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://qrs73.github.io/uetdsyolculistesi/about.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://qrs73.github.io/uetdsyolculistesi/contact.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://qrs73.github.io/uetdsyolculistesi/privacy.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://qrs73.github.io/uetdsyolculistesi/terms.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
 </urlset>
